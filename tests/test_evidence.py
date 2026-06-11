@@ -33,8 +33,16 @@ class TestEvidencePack(unittest.TestCase):
         pack = build_pack(self.config, self.results)
         results_file = pack / "results.json"
         data = json.loads(results_file.read_text(encoding="utf-8"))
-        data["suites"][0]["n_passed"] = data["suites"][0]["n_items"]  # forge a pass
-        results_file.write_text(json.dumps(data, indent=2, sort_keys=True), encoding="utf-8")
+        # Forge a suite that genuinely has failures, so the file content
+        # really changes (a suite already at n_passed == n_items would make
+        # this edit a byte-identical no-op). newline="\n" keeps the bytes
+        # platform-independent: the hash must catch the forgery itself, not
+        # an accidental CRLF conversion.
+        suite = next(s for s in data["suites"] if s["n_passed"] < s["n_items"])
+        suite["n_passed"] = suite["n_items"]
+        results_file.write_text(
+            json.dumps(data, indent=2, sort_keys=True), encoding="utf-8", newline="\n"
+        )
         ok, problems = verify_pack(pack)
         self.assertFalse(ok)
         self.assertTrue(any("results.json" in p for p in problems))
