@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    name: tests (py${{ matrix.python }}, ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.10", "3.12", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install
+        run: pip install -e .
+      - name: Unit tests
+        run: python -m unittest discover -s tests -v
+
+  verify-evidence:
+    # The committed example pack is hash-pinned over exact bytes. Verifying
+    # it from a fresh checkout on BOTH platforms proves the integrity scheme
+    # survives clone/checkout (the .gitattributes LF rule is load-bearing).
+    name: verify committed evidence pack (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: pip install -e .
+      - name: Verify the committed pack
+        shell: bash
+        run: evidentry verify examples/credit_memo_summarizer/evidence/credit-memo-summarizer-v1.2.0-*
+      - name: Re-run the example and verify the regenerated pack
+        shell: bash
+        run: |
+          cd examples/credit_memo_summarizer
+          # Exit 2 = "a suite failed its threshold", which this example does
+          # on purpose; any other nonzero exit is a real failure.
+          evidentry run -c evidentry.yaml && rc=0 || rc=$?
+          if [ "$rc" != "0" ] && [ "$rc" != "2" ]; then exit "$rc"; fi
+          for pack in evidence/credit-memo-summarizer-v1.2.0-*; do
+            evidentry verify "$pack"
+          done

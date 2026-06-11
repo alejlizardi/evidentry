@@ -1,0 +1,3 @@
+# Evidence packs are hash-pinned over exact bytes; CRLF conversion on
+# checkout would break `evidentry verify`. Force LF for everything.
+* text=auto eol=lf

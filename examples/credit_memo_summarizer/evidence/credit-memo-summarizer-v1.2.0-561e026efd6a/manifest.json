@@ -1,0 +1,31 @@
+{
+  "baseline_pack": null,
+  "config_sha256": "82bd4819f90ccb87022132744655db14092450aab65f36bd483b344d5e21666d",
+  "created_utc": "2026-06-11T18:18:54+00:00",
+  "dataset_sha256": {
+    "dataset_accuracy.jsonl": "69c6a07b49f4bd7a594f4bec7ea04f2d577728f6cdbebee0f6e673eb80e48992",
+    "dataset_numeric.jsonl": "bab21478427890b72ee7114302f60c2e314bbf235e23487d9c31e090afc2241c",
+    "dataset_refusal.jsonl": "e73a72c0d3873dc39cd826694bc504ba3bfc5d6194f6e3913af65b228220cf3c"
+  },
+  "evidentry_version": "0.2.0",
+  "files": {
+    "report.md": "d38d4630280bced1f26b7449cfdd386cbad871c476e8f0f4ef76e4926e59843e",
+    "results.json": "82a3ddacba721d06ca57d6413839ee020b5215915fe83d6a053406aaef993b24"
+  },
+  "model": {
+    "description": "",
+    "limitations": [
+      "Not validated for consumer credit or syndicated facilities.",
+      "Figures in scanned documents with OCR confidence < 0.9 must be hand-checked.",
+      "The model must not provide investment advice or credit decisions; out-of-scope requests must be refused (tested in the out_of_scope_refusal suite)."
+    ],
+    "materiality_tier": 2,
+    "name": "credit-memo-summarizer",
+    "owner": "Commercial Lending Technology, validated by Model Risk Management",
+    "tier_rationale": "Tier 2: the model informs but does not decide credit outcomes; every output passes human review before reaching credit committee. Exposure is bounded by the commercial loan portfolio it touches (~$1.4B), and erroneous summaries are recoverable at the human review step. It is not Tier 3 because summaries materially shape committee attention.\n",
+    "use_case": "Summarizes commercial credit memos (3-15 pages) into a one-page brief for loan officers ahead of credit committee. Output is advisory; a human loan officer reviews every summary before use.\n",
+    "vendor": "internal",
+    "version": "1.2.0"
+  },
+  "pack_id": "561e026efd6ae74f02476e2c55e6237d59b02f393288908daf5ecec0131d960a"
+}

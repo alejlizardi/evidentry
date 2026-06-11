@@ -1,0 +1,4 @@
+{"id": "num-01", "input": "Extract the DSCR as a number: 'Debt service coverage stands at 1.42x on a trailing twelve month basis.'", "expected": 1.42, "mock_response": "1.42"}
+{"id": "num-02", "input": "Extract the facility size in millions: 'The borrower requests a facility of $12,500,000.'", "expected": 12500000, "mock_response": "The facility size is 12,500,000 dollars."}
+{"id": "num-03", "input": "Extract the LTV percentage as a number: 'Loan-to-value is approximately 78% based on the March appraisal.'", "expected": 78, "mock_response": "78"}
+{"id": "num-04", "input": "Extract the occupancy percentage: 'The property is 91% occupied as of the rent roll dated May 31.'", "expected": 91, "mock_response": "Occupancy: 90%"}

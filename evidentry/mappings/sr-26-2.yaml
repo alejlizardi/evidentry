@@ -1,0 +1,72 @@
+# Mapping: evidence pack artifacts -> SR 26-2 principles.
+#
+# Source: SR 26-2, "Supervisory Guidance on Model Risk Management"
+# (Fed/OCC/FDIC, April 17, 2026; supersedes SR 11-7 and SR 21-8).
+# Requirement ids cite the section of the guidance they paraphrase
+# (e.g. SR26-2.V.OA = section V, Outcomes Analysis).
+#
+# Read the scope facts before using this mapping:
+#
+#   1. GENAI IS OUT OF SCOPE. Footnote 3: "Generative AI and agentic AI
+#      models are novel and rapidly evolving. As such, they are not within
+#      the scope of this guidance." The principles apply to traditional
+#      statistical/quantitative models and NON-generative, non-agentic AI.
+#      For uncovered systems (i.e. most LLM products), the guidance says a
+#      bank's own "risk management and governance practices should guide
+#      the determination of appropriate governance and controls."
+#   2. NON-BINDING. "This guidance does not set forth enforceable standards
+#      or prescriptive requirements; accordingly, non-compliance with this
+#      guidance will not result in supervisory criticism."
+#   3. AUDIENCE. "Most relevant to banking organizations with over $30
+#      billion in total assets."
+#
+# Using this mapping for an LLM system is therefore an ANALOGY: organizing
+# evidence around the same principles a bank already applies to in-scope
+# models, ahead of GenAI-specific guidance (an interagency RFI on AI has
+# been signaled). It is an interpretation, not the guidance text, and not
+# legal or regulatory advice. Validate with compliance counsel.
+#
+# satisfied_by values are artifact kinds evidentry can produce:
+#   model_card, tier_rationale, limitations, suite_results, dataset_hashes,
+#   manifest, drift_comparison, manual (= always reported as a gap for the
+#   institution to evidence outside this tool).
+
+framework: "SR 26-2 — Supervisory Guidance on Model Risk Management (April 2026), principles applied by analogy"
+version: "0.2"
+requirements:
+  - id: SR26-2.III.MAT
+    title: "Materiality assessment: model purpose and exposure determine materiality; higher-materiality models warrant more comprehensive and rigorous oversight (sec. III)"
+    satisfied_by: [tier_rationale]
+  - id: SR26-2.III.AGG
+    title: "Aggregate model risk: interactions and dependencies among models; reliance on common assumptions, data, or methodologies (sec. III)"
+    satisfied_by: [limitations, manual]
+  - id: SR26-2.III.EC
+    title: "Effective challenge: critical analysis by objective experts with expertise, sufficient independence, and organizational standing (sec. III)"
+    satisfied_by: [manual]
+  - id: SR26-2.IV.TEST
+    title: "Model testing evaluates whether the model performs as intended; rigor commensurate with model complexity and materiality (sec. IV)"
+    satisfied_by: [suite_results]
+  - id: SR26-2.IV.USE
+    title: "Model use within intended purpose; extending use beyond the original application warrants additional analysis and controls (sec. IV)"
+    satisfied_by: [suite_results, limitations]
+  - id: SR26-2.V.CS
+    title: "Conceptual soundness: assessing and documenting model design, key choices, assumptions, and developmental evidence (sec. V)"
+    satisfied_by: [model_card, limitations, manual]
+  - id: SR26-2.V.OA
+    title: "Outcomes analysis: comparison of model outputs to corresponding outcomes against established performance thresholds (sec. V)"
+    satisfied_by: [suite_results]
+  - id: SR26-2.V.MON
+    title: "Ongoing monitoring: evaluation of whether the model performs as expected; detection of performance deterioration over time (sec. V)"
+    satisfied_by: [drift_comparison]
+  - id: SR26-2.VI.INV
+    title: "Model inventory: sufficient information to understand model risks at the individual and aggregate levels (sec. VI)"
+    satisfied_by: [model_card]
+  - id: SR26-2.VI.DOC
+    title: "Documentation adequate to support continuity of operations and to track recommendations, responses, and exceptions (sec. VI)"
+    satisfied_by: [model_card, manifest]
+  - id: SR26-2.VI.GOV
+    title: "Governance and controls: policies defining risk management expectations; clear roles and accountability; internal audit evaluates MRM effectiveness (sec. VI)"
+    satisfied_by: [manual]
+  - id: SR26-2.VII.VEN
+    title: "Vendor and third-party products: understanding of conceptual soundness, design, and performance; ongoing monitoring and outcome analysis; validation by internal or outside parties (sec. VII)"
+    satisfied_by: [model_card, manual]

@@ -1,0 +1,36 @@
+# Mapping: evidence pack artifacts -> EU AI Act Annex IV technical
+# documentation items (high-risk AI systems).
+#
+# Note on timing: under the May 2026 Omnibus political agreement, high-risk
+# obligations for stand-alone (Annex III) systems are expected to apply from
+# 2 December 2027 (Annex I embedded systems: 2 August 2028), subject to
+# formal adoption. This file is an INTERPRETATION to help structure
+# documentation early; it is not the regulation text and not legal advice.
+
+framework: "EU AI Act — Annex IV technical documentation (interpretive subset)"
+version: "0.1"
+requirements:
+  - id: AIA-IV.1
+    title: "General description of the AI system, its intended purpose, and its provider"
+    satisfied_by: [model_card]
+  - id: AIA-IV.2
+    title: "Description of system elements: model versions, third-party components"
+    satisfied_by: [model_card, manifest]
+  - id: AIA-IV.3
+    title: "Validation and testing procedures, metrics used, and results"
+    satisfied_by: [suite_results]
+  - id: AIA-IV.4
+    title: "Pre-determined changes and performance boundaries; known limitations"
+    satisfied_by: [limitations]
+  - id: AIA-IV.5
+    title: "Datasets used for testing: provenance and integrity"
+    satisfied_by: [dataset_hashes]
+  - id: AIA-IV.6
+    title: "Post-market monitoring plan and performance tracking"
+    satisfied_by: [drift_comparison]
+  - id: AIA-IV.7
+    title: "Risk management system documentation (Article 9)"
+    satisfied_by: [manual]
+  - id: AIA-IV.8
+    title: "Human oversight measures (Article 14)"
+    satisfied_by: [manual]
