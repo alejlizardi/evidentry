@@ -14,6 +14,8 @@ uncertainty that a reviewer (or auditor) should expect to see:
   an unsettled verdict.
 - Cluster-adjusted intervals for datasets whose items share a source
   (the same document, scenario, or template) and are therefore correlated.
+- Chance-corrected pairwise agreement (Cohen's kappa) for LLM-as-judge
+  panels, where raw agreement is inflated by extreme base rates.
 
 Pure stdlib; every number in a report should be recomputable by hand.
 """
@@ -407,6 +409,37 @@ def cluster_diagnostics(item_passed: list[bool], clusters: list[str]) -> dict:
         deff = var_cl / var_iid
     n_eff = n / max(deff, 1.0)
     return {"n_clusters": n_clusters, "deff": deff, "n_eff": n_eff}
+
+
+def cohen_kappa(verdicts_a: list[str], verdicts_b: list[str]) -> dict:
+    """Chance-corrected agreement between two judges over the same items.
+
+    Raw agreement flatters judge pairs with extreme base rates: two judges
+    who each pass ~95% of items agree ~90% of the time by chance alone.
+    Cohen's kappa subtracts that: kappa = (p_o - p_e) / (1 - p_e), with
+    p_e from the judges' marginal pass rates.
+
+    Computed over items where BOTH verdicts are valid ('pass'/'fail').
+    Invalid responses are reliability evidence reported separately;
+    excluding them here keeps kappa interpretable. Returns kappa=None when
+    p_e = 1 (both judges constant and identical — kappa is undefined there,
+    and the raw agreement rate is the honest number).
+    """
+    if len(verdicts_a) != len(verdicts_b):
+        raise ValueError("judge verdict lists must be equal length")
+    valid = ("pass", "fail")
+    pairs = [
+        (a, b) for a, b in zip(verdicts_a, verdicts_b) if a in valid and b in valid
+    ]
+    n = len(pairs)
+    if n == 0:
+        return {"n_pairs": 0, "observed_agreement": None, "kappa": None}
+    p_o = sum(a == b for a, b in pairs) / n
+    pa = sum(a == "pass" for a, _ in pairs) / n
+    pb = sum(b == "pass" for _, b in pairs) / n
+    p_e = pa * pb + (1 - pa) * (1 - pb)
+    kappa = None if p_e >= 1.0 - 1e-12 else (p_o - p_e) / (1 - p_e)
+    return {"n_pairs": n, "observed_agreement": p_o, "kappa": kappa}
 
 
 def threshold_verdict(

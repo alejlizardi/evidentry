@@ -32,7 +32,9 @@ carry a sample-size certificate: how many items it would take to
 settle them, by exact binomial power at the observed rate. Suites
 whose items declare a `cluster` (a shared source document or template)
 use cluster-adjusted intervals, so correlated items are not counted
-as independent evidence.
+as independent evidence. Suites scored by LLM judges carry their own
+judge-disagreement evidence in the suite detail below — a judge's
+verdict is a measurement, not ground truth.
 
 | Suite | Metric | Items | Pass rate | 95% CI | Threshold | Verdict |
 |---|---|---|---|---|---|---|
@@ -130,5 +132,5 @@ underlying provider is deterministic.
 
 - Pack ID: `561e026efd6ae74f02476e2c55e6237d59b02f393288908daf5ecec0131d960a`
 - Config sha256: `82bd4819f90ccb87022132744655db14092450aab65f36bd483b344d5e21666d`
-- Created (UTC): 2026-06-11T18:18:54+00:00
-- evidentry version: 0.2.0
+- Created (UTC): 2026-06-12T00:40:20+00:00
+- evidentry version: 0.3.0

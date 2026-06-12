@@ -1,5 +1,50 @@
 # Changelog
 
+## 0.3.0 — unreleased
+
+The judge release: graded qualities (faithfulness, tone) can now be scored
+by LLM judges — with the judges' own reliability reported as evidence,
+because a judge's verdict is a measurement, not ground truth.
+
+### Added
+- **`metric: judge`**: score a suite with a panel of LLM judges against a
+  written rubric. Judges use the same provider adapters as the system under
+  test (Anthropic / OpenAI-compatible), pre-computed verdicts via
+  `external` JSONL, or `mock` for deterministic runs. Decision rules are
+  explicit: `unanimous` (default — disagreement counts against the item,
+  consistent with the runs-per-item instability rule) or `majority`
+  (strict; ties and invalid responses count against).
+- **Judge-disagreement evidence** in every judge-scored suite:
+  - panel agreement rate with a Wilson 95% CI, and — when `min_agreement`
+    is configured — the same settledness verdict semantics a pass rate
+    gets (cluster-adjusted when items declare clusters);
+  - pairwise **Cohen's κ** (chance-corrected agreement; raw agreement is
+    inflated when both judges pass nearly everything), undefined cases
+    reported as such rather than forced to a number;
+  - **JUDGE-DEPENDENT flag**: the suite verdict is recomputed under each
+    judge alone, and the report (and `run` summary line) says loudly when
+    the result flips with the choice of judge;
+  - unparseable judge responses recorded as **`invalid`** — counted
+    against agreement and item passes, reported per judge, never silently
+    coerced to a verdict;
+  - every judge's raw response stored in the pack, so reviewers can audit
+    the judge, not just the judged.
+- Worked example `examples/judged_faithfulness/` (mock judges, no API key):
+  a faithfulness suite exhibiting real disagreement, an invalid judge
+  response, an unsettled agreement verdict, and a judge-dependent result —
+  with its committed evidence pack verified from a fresh checkout in CI.
+
+### Honest limits (stated in README and report)
+- Judge *self*-consistency is not yet modeled: judge suites are restricted
+  to `runs: 1` rather than treating correlated judging events as
+  independent evidence.
+- κ is a point estimate (no interval yet); a single-judge panel is allowed
+  but flagged in bold as producing no disagreement evidence.
+
+### Tests
+- 84 → 114 unit tests, including a hand-computed κ pin and end-to-end
+  judge-run regression tests.
+
 ## 0.2.0 — 2026-06-11
 
 The statistics release. An independent code audit of 0.1.0 found nine

@@ -10,8 +10,10 @@ from typing import Any
 
 import yaml
 
-VALID_METRICS = {"exact_match", "contains", "regex", "numeric", "refusal"}
+VALID_METRICS = {"exact_match", "contains", "regex", "numeric", "refusal", "judge"}
 VALID_PROVIDERS = {"mock", "anthropic", "openai", "external"}
+VALID_JUDGE_TYPES = {"mock", "anthropic", "openai", "external"}
+VALID_JUDGE_DECISIONS = {"unanimous", "majority"}
 
 
 class ConfigError(ValueError):
@@ -45,6 +47,53 @@ class ModelCard:
 
 
 @dataclass
+class JudgeSpec:
+    """One judge on a panel: a model (or pre-computed verdict file) that
+    scores outputs against the suite's rubric."""
+
+    name: str
+    type: str
+    model_id: str = ""
+    results_file: str = ""
+    options: dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "name": self.name,
+            "type": self.type,
+            "model_id": self.model_id,
+            "results_file": self.results_file,
+            "options": self.options,
+        }
+
+
+@dataclass
+class JudgeConfig:
+    """Judge panel for a `metric: judge` suite.
+
+    `decision` is how per-judge verdicts become an item verdict:
+    'unanimous' (default — disagreement counts against the item, consistent
+    with the runs-per-item rule that instability is failure) or 'majority'
+    (strict majority of judges; ties and invalid responses count against).
+    `min_agreement` optionally gives the judge-agreement rate its own
+    settledness verdict at that threshold.
+    """
+
+    rubric: str
+    judges: list[JudgeSpec]
+    decision: str = "unanimous"
+    min_agreement: float | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "rubric": self.rubric,
+            "decision": self.decision,
+            "min_agreement": self.min_agreement,
+            "judges": [j.to_dict() for j in self.judges],
+        }
+
+
+@dataclass
 class SuiteConfig:
     name: str
     dataset: str
@@ -54,6 +103,7 @@ class SuiteConfig:
     runs: int = 1
     metric_options: dict[str, Any] = field(default_factory=dict)
     requirement_ids: list[str] = field(default_factory=list)
+    judge: JudgeConfig | None = None
 
 
 @dataclass
@@ -92,6 +142,9 @@ class Config:
                     "runs": s.runs,
                     "metric_options": s.metric_options,
                     "requirement_ids": s.requirement_ids,
+                    # Only present for judge suites, so hashes of existing
+                    # non-judge configs are unchanged across versions.
+                    **({"judge": s.judge.to_dict()} if s.judge is not None else {}),
                 }
                 for s in self.suites
             ],
@@ -105,6 +158,67 @@ def _require(data: dict[str, Any], key: str, where: str) -> Any:
     if key not in data:
         raise ConfigError(f"Missing required key '{key}' in {where}")
     return data[key]
+
+
+def _load_judge(s: dict[str, Any], name: str, metric: str, runs: int) -> JudgeConfig | None:
+    if metric != "judge":
+        if "judge" in s:
+            raise ConfigError(
+                f"suite '{name}': a 'judge' block is only valid with metric: judge"
+            )
+        return None
+    if runs != 1:
+        # Judge self-consistency across repeated runs is its own evidence
+        # problem (correlated judging events would need different intervals);
+        # refuse rather than model it wrong.
+        raise ConfigError(f"suite '{name}': metric 'judge' requires runs: 1")
+    where = f"suite '{name}' judge"
+    j = _require(s, "judge", f"suite '{name}' (metric 'judge' needs a judge block)")
+    rubric = str(_require(j, "rubric", where)).strip()
+    if not rubric:
+        raise ConfigError(f"{where}: rubric must be non-empty")
+    judges_raw = _require(j, "judges", where)
+    if not judges_raw:
+        raise ConfigError(f"{where}: at least one judge is required")
+    specs: list[JudgeSpec] = []
+    seen_judges: set[str] = set()
+    for jr in judges_raw:
+        jname = str(_require(jr, "name", where))
+        if jname in seen_judges:
+            raise ConfigError(f"{where}: duplicate judge name '{jname}'")
+        seen_judges.add(jname)
+        jtype = str(_require(jr, "type", f"{where} '{jname}'"))
+        if jtype not in VALID_JUDGE_TYPES:
+            raise ConfigError(
+                f"{where} '{jname}': type must be one of {sorted(VALID_JUDGE_TYPES)}"
+            )
+        results_file = str(jr.get("results_file", ""))
+        if jtype == "external" and not results_file:
+            raise ConfigError(
+                f"{where} '{jname}': results_file is required when type is 'external'"
+            )
+        specs.append(
+            JudgeSpec(
+                name=jname,
+                type=jtype,
+                model_id=str(jr.get("model_id", "")),
+                results_file=results_file,
+                options=dict(jr.get("options", {})),
+            )
+        )
+    decision = str(j.get("decision", "unanimous"))
+    if decision not in VALID_JUDGE_DECISIONS:
+        raise ConfigError(
+            f"{where}: decision must be one of {sorted(VALID_JUDGE_DECISIONS)}"
+        )
+    min_agreement: float | None = None
+    if j.get("min_agreement") is not None:
+        min_agreement = float(j["min_agreement"])
+        if not 0.0 <= min_agreement <= 1.0:
+            raise ConfigError(f"{where}: min_agreement must be between 0 and 1")
+    return JudgeConfig(
+        rubric=rubric, judges=specs, decision=decision, min_agreement=min_agreement
+    )
 
 
 def load_config(path: str | Path) -> Config:
@@ -162,6 +276,8 @@ def load_config(path: str | Path) -> Config:
         threshold = float(_require(s, "threshold", f"suite '{name}'"))
         if not 0.0 <= threshold <= 1.0:
             raise ConfigError(f"suite '{name}': threshold must be between 0 and 1")
+        runs = int(s.get("runs", 1))
+        judge_cfg = _load_judge(s, name, metric, runs)
         suites.append(
             SuiteConfig(
                 name=name,
@@ -169,9 +285,10 @@ def load_config(path: str | Path) -> Config:
                 metric=metric,
                 threshold=threshold,
                 description=str(s.get("description", "")),
-                runs=int(s.get("runs", 1)),
+                runs=runs,
                 metric_options=dict(s.get("metric_options", {})),
                 requirement_ids=[str(x) for x in s.get("requirement_ids", [])],
+                judge=judge_cfg,
             )
         )
 

@@ -47,7 +47,7 @@ evidentry run -c evidentry.yaml
 evidentry verify evidence/credit-memo-summarizer-v1.2.0-*
 ```
 
-The committed sample output is in [`examples/credit_memo_summarizer/evidence/`](examples/credit_memo_summarizer/evidence/) — including a **failing** numeric-extraction suite and a use-limit violation, because an evidence tool you only see passing is a demo, not evidence.
+The committed sample output is in [`examples/credit_memo_summarizer/evidence/`](examples/credit_memo_summarizer/evidence/) — including a **failing** numeric-extraction suite and a use-limit violation, because an evidence tool you only see passing is a demo, not evidence. A second example, [`examples/judged_faithfulness/`](examples/judged_faithfulness/), scores a graded quality with a two-judge panel that genuinely disagrees.
 
 ## What a pack asserts
 
@@ -62,9 +62,23 @@ The committed sample output is in [`examples/credit_memo_summarizer/evidence/`](
 
 ## Metrics
 
-`exact_match`, `contains` (all substrings), `regex`, `numeric` (tolerance-based, for extracted figures), `refusal` (use-limit controls: *the summarizer must decline to give investment advice* is a control that needs evidence like everything else). These cover deterministic, checkable properties; graded qualities (faithfulness, tone) need LLM-as-judge metrics, which are deliberately not in v0.1 — judge reliability is its own evidence problem, and we'd rather ship it with disagreement statistics than pretend a single judge is ground truth.
+`exact_match`, `contains` (all substrings), `regex`, `numeric` (tolerance-based, for extracted figures), `refusal` (use-limit controls: *the summarizer must decline to give investment advice* is a control that needs evidence like everything else). These cover deterministic, checkable properties. Graded qualities (faithfulness, tone) use the `judge` metric — see the next section, because a judge's verdict is a measurement, not ground truth.
 
-Two metrics deserve their caveats in the open. `numeric` refuses to guess: if an output contains more than one number, the item *fails with an explanation* unless you set an explicit extraction rule (`first` / `last` / `any`) — a silent wrong guess feeding a confidence interval is exactly the failure an evidence tool exists to prevent. `refusal` is a transparent lexical heuristic (the patterns are ~10 lines of `metrics.py`); it distinguishes "I can't make credit decisions" from "I can't believe this stock", but it is not a semantic classifier — audit the item-level details when a use-limit verdict matters.
+## LLM-as-judge, with the disagreement in the open
+
+For qualities no regex can check, a suite can be scored by a panel of LLM judges (`metric: judge`): you write a rubric, name two or more judges (Anthropic / OpenAI-compatible, pre-computed verdicts via `external`, or `mock` for deterministic runs), and pick an explicit decision rule — `unanimous` (default: disagreement counts against the item, the same way instability across repeated runs does) or `majority`.
+
+The judges are part of the measurement instrument, so the pack carries evidence about *them* too:
+
+- **Panel agreement gets the same settledness semantics as a pass rate** — a Wilson interval, and (if you set `min_agreement`) a PASS / PASS (point) style verdict on the agreement rate itself.
+- **Pairwise Cohen's κ**, because raw agreement flatters judge pairs with extreme base rates: two judges who each pass ~95% of items agree ~90% of the time by chance alone.
+- **Judge sensitivity:** the suite verdict is recomputed under each judge alone. If the result flips with the choice of judge, the report says **JUDGE-DEPENDENT** — one judge's opinion is never laundered into a fact about the model.
+- **Unparseable judge responses are recorded as `invalid`**, counted against agreement and the item, and reported — never silently coerced to a verdict.
+- Every judge's raw response is stored in the pack, so a reviewer can audit the judge, not just the judged.
+
+The worked example in [`examples/judged_faithfulness/`](examples/judged_faithfulness/) shows all of this on a faithfulness suite where the judges genuinely disagree. A single-judge panel is allowed, but the report states in bold that it produces no disagreement evidence. Known limits: judge *self*-consistency (the same judge re-asked) is not yet modeled — judge suites are restricted to `runs: 1` rather than modeling correlated judging events wrong — and κ is reported as a point estimate without an interval.
+
+Two deterministic metrics deserve their caveats in the open. `numeric` refuses to guess: if an output contains more than one number, the item *fails with an explanation* unless you set an explicit extraction rule (`first` / `last` / `any`) — a silent wrong guess feeding a confidence interval is exactly the failure an evidence tool exists to prevent. `refusal` is a transparent lexical heuristic (the patterns are ~10 lines of `metrics.py`); it distinguishes "I can't make credit decisions" from "I can't believe this stock", but it is not a semantic classifier — audit the item-level details when a use-limit verdict matters.
 
 ## Framework mappings — read this before using them
 
@@ -76,12 +90,12 @@ Packs can include requirement-coverage tables for **SR 26-2** (US interagency mo
 
 ## Scope, honestly
 
-v0.1 covers outcomes-analysis-style evidence for text-in/text-out systems with checkable expected outputs. Not yet covered: LLM-as-judge metrics, fairness testing, multi-turn agent traces, tool-call audit, pack signing.
+evidentry covers outcomes-analysis-style evidence for text-in/text-out systems, scored by deterministic metrics or LLM-judge panels with disagreement reporting. Not yet covered: fairness testing, multi-turn agent traces, tool-call audit, pack signing, judge self-consistency modeling.
 
 ## Roadmap
 
 - **Pack signing + trusted timestamps**, so integrity holds against tampering, not just accidents
-- **LLM-as-judge metrics with judge-disagreement reporting** (a judge that always agrees with itself is not the same as a judge that's right)
+- **Judge self-consistency** (the same judge re-asked; a judge that always agrees with itself is not the same as a judge that's right) and intervals on κ
 - **Format adapters** for DeepEval / Inspect / promptfoo output files, so `external` ingestion doesn't require hand-exported JSONL
 - Agent-trace evidence (multi-turn, tool calls)
 - CI integration: fail the build when a high-tier model's evidence pack regresses

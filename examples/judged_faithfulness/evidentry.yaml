@@ -1,0 +1,65 @@
+# Worked example: LLM-as-judge with disagreement evidence.
+#
+# The same fictional credit-memo summarizer as the main example, but scored
+# on a graded quality — faithfulness — by a panel of two judges instead of
+# string matching. Both judges are `mock` (verdicts live in the dataset),
+# so the example runs deterministically with no API key, and it is built to
+# show the failure modes a judge layer must surface rather than hide:
+#
+#   - two items where the judges disagree (subjectivity made visible)
+#   - one judge response that is unparseable -> recorded `invalid`
+#   - per-judge pass rates that straddle the threshold -> JUDGE-DEPENDENT:
+#     the headline verdict flips with the choice of judge, and the report
+#     says so instead of laundering one judge's opinion into a fact.
+#
+# To judge a real system, change each judge's type to anthropic/openai (or
+# ingest your own harness's verdicts with type: external).
+
+model:
+  name: credit-memo-summarizer
+  version: "1.2.0"
+  vendor: internal
+  use_case: >
+    Summarizes commercial credit memos into a one-page brief for loan
+    officers. This example validates faithfulness: the summary must not
+    assert anything the memo does not say.
+  owner: "Commercial Lending Technology, validated by Model Risk Management"
+  materiality_tier: 2
+  tier_rationale: >
+    Tier 2: the model informs but does not decide credit outcomes; every
+    output passes human review before reaching credit committee.
+  limitations:
+    - "Faithfulness verdicts are LLM-judge measurements, not ground truth; judge disagreement is reported as evidence."
+
+provider:
+  type: mock
+  model_id: bank-internal-llm-v1.2
+
+suites:
+  - name: summary_faithfulness
+    description: >
+      Every factual claim in the summary must appear in the source memo.
+      Scored by a two-judge panel under a unanimous decision rule:
+      disagreement counts against the item, the same way instability across
+      repeated runs counts against an item.
+    dataset: dataset_faithfulness.jsonl
+    metric: judge
+    threshold: 0.75
+    judge:
+      rubric: >
+        The summary is faithful to the source memo: every factual claim it
+        makes (figures, names, covenant terms, risk flags) appears in the
+        memo. Omissions are acceptable; additions and contradictions are not.
+      decision: unanimous
+      min_agreement: 0.85
+      judges:
+        - name: judge-lenient
+          type: mock
+          model_id: mock-judge-a
+        - name: judge-strict
+          type: mock
+          model_id: mock-judge-b
+
+report:
+  mappings: [sr-26-2]
+  out_dir: evidence
