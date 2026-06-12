@@ -28,6 +28,11 @@ Run-over-run changes get **Fisher's exact test** instead of an eyeball compariso
 
 Items that share a source (several questions about the same document, scenarios from the same template) are not independent evidence. Give them a `cluster` field and the interval and verdict use a **cluster-adjusted effective sample size** (one-way cluster-robust variance → design effect, with a t critical value carrying G−1 degrees of freedom because the variance is estimated from G clusters), so correlation widens your intervals instead of silently flattering them. Known limit, in the open: with very few clusters and high intra-cluster correlation even the adjusted interval under-covers somewhat — the fix is more clusters, not more items per cluster. `runs: N` repeats each item; an item passes only if every run passes, so output instability shows up as failure instead of luck.
 
+Two opt-in variants, each with its trade stated (`statistics:` block in the config):
+
+- **Strict mode** (`intervals: clopper_pearson`): exact-conservative Clopper–Pearson intervals for verdicts and certificates — coverage guaranteed ≥95% at *every* sample size and true rate (verified exactly in the validation study: min coverage 0.9534), at the price of systematically wider intervals and larger sample-size certificates. The guarantee is for independent items only, so clustered suites honestly fall back to the cluster-adjusted interval and the report says so.
+- **Mid-p drift testing** (`drift_test: fisher_midp`): recovers a real share of the power Fisher's exactness sacrifices to discreteness (e.g. 0.22 → 0.33 at 8 items per run against a 0.9 → 0.5 drift, computed exactly). The honest cost: mid-p's false-alarm rate is approximately nominal on average but not guaranteed — its worst case reaches 0.057 at n = 50. That number is why plain Fisher stays the default.
+
 What the statistics honestly mean — and don't: the intervals quantify sampling uncertainty *on your dataset*. They do not certify field performance on a different input distribution, and `verify` proves integrity (the bytes haven't changed since the pack was built), not provenance (packs are not yet signed — see roadmap).
 
 ## Quickstart

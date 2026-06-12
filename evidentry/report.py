@@ -204,7 +204,14 @@ def render_markdown(
 
     add("## 2. Outcomes analysis")
     add("")
-    add("Pass rates carry Wilson 95% confidence intervals. A suite is marked")
+    stats_cfg = results.get("statistics") or {}
+    if stats_cfg.get("intervals") == "clopper_pearson":
+        add("Pass rates carry Clopper-Pearson exact 95% confidence intervals")
+        add("(**strict mode**: coverage is guaranteed to be at least 95% at every")
+        add("sample size and true rate, at the price of systematically wider")
+        add("intervals than the default Wilson score). A suite is marked")
+    else:
+        add("Pass rates carry Wilson 95% confidence intervals. A suite is marked")
     add("**PASS** only when the *lower* confidence bound clears its acceptance")
     add("threshold; **PASS (point)** means the point estimate clears it but the")
     add("sample is too small to call the evidence settled. Unsettled verdicts")
@@ -243,6 +250,13 @@ def render_markdown(
                 f"{s['deff']:.2f}, effective sample size {s['n_eff']:.1f} — "
                 "the interval and verdict use the effective sample size"
             )
+            if s.get("strict_interval_overridden_by_clustering"):
+                add(
+                    "- Strict (Clopper-Pearson) intervals were configured, but the "
+                    "guarantee holds only for independent items: this clustered "
+                    "suite uses the cluster-adjusted interval instead — a strict "
+                    "label on correlated data would be a false promise"
+                )
         je = s.get("judge_evidence")
         if je is not None:
             _render_judge_evidence(add, je)
@@ -280,8 +294,16 @@ def render_markdown(
         add(f"Compared against prior evidence pack `{drift['baseline_pack']}`.")
         add("")
         n_comparable = sum(1 for r in drift["suites"] if r.get("comparable"))
-        add("p-values are two-sided Fisher's exact tests (exact at any sample")
-        add(f"size) with Holm adjustment across the {n_comparable} comparable")
+        if str(drift.get("method", "")).startswith("fisher_midp"):
+            add("p-values are two-sided **mid-p** Fisher tests: tables exactly as")
+            add("probable as the observed one get half weight, recovering the power")
+            add("plain Fisher sacrifices to discreteness at small n. The honest")
+            add("trade: mid-p's false-alarm rate is approximately the nominal level")
+            add("on average but is not guaranteed never to exceed it. Holm")
+            add(f"adjustment applies across the {n_comparable} comparable")
+        else:
+            add("p-values are two-sided Fisher's exact tests (exact at any sample")
+            add(f"size) with Holm adjustment across the {n_comparable} comparable")
         add("suite(s), so monitoring several suites at once does not inflate the")
         add("false-drift rate. Suites whose dataset, metric, or runs-per-item")
         add("changed are **not comparable** and get no p-value at all — a test")

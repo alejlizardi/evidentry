@@ -53,6 +53,43 @@ def wilson_interval(successes: int, n: int, z: float = Z_95) -> tuple[float, flo
     return _wilson_from_rate(successes / n, n, z)
 
 
+def clopper_pearson_interval(
+    successes: int, n: int, alpha: float = 0.05
+) -> tuple[float, float]:
+    """Clopper-Pearson exact-conservative interval ('strict mode').
+
+    Guarantees coverage >= 1 - alpha at EVERY (n, p) — what Wilson promises
+    only on average — at the price of systematically wider intervals. The
+    standard beta-quantile form: lower = BetaInv(alpha/2; S, n-S+1),
+    upper = BetaInv(1-alpha/2; S+1, n-S). For users who want guaranteed
+    minimum coverage over efficiency; the guarantee is for iid binomial
+    sampling and does not extend to cluster-correlated items.
+    """
+    if n == 0:
+        return (0.0, 1.0)
+    if successes < 0 or successes > n:
+        raise ValueError("successes must be between 0 and n")
+    low = 0.0 if successes == 0 else _beta_quantile(alpha / 2, successes, n - successes + 1)
+    high = (
+        1.0 if successes == n else _beta_quantile(1 - alpha / 2, successes + 1, n - successes)
+    )
+    return (low, high)
+
+
+def _beta_quantile(q: float, a: float, b: float) -> float:
+    """Quantile of Beta(a, b) by bisection on the regularized incomplete beta."""
+    if not 0.0 < q < 1.0:
+        raise ValueError("q must be in (0, 1)")
+    lo, hi = 0.0, 1.0
+    for _ in range(100):
+        mid = (lo + hi) / 2
+        if _betainc_reg(a, b, mid) < q:
+            lo = mid
+        else:
+            hi = mid
+    return (lo + hi) / 2
+
+
 def _log_comb(n: int, k: int) -> float:
     if k < 0 or k > n:
         return -math.inf
@@ -89,6 +126,48 @@ def fisher_exact_pvalue(successes_a: int, n_a: int, successes_b: int, n_b: int) 
     return min(1.0, p)
 
 
+def fisher_midp_pvalue(successes_a: int, n_a: int, successes_b: int, n_b: int) -> float:
+    """Two-sided mid-p variant of Fisher's exact test.
+
+    Fisher's exact p counts the observed table's full probability, which at
+    tiny n leaves the test's actual size far below alpha (.008 at n=4 per
+    run) — validity bought with power. The mid-p assigns tables exactly as
+    probable as the observed one HALF weight instead:
+
+        p_mid = P(less probable tables) + 0.5 * P(equally probable tables)
+
+    The honest trade, stated plainly: mid-p's size is approximately alpha
+    on average over configurations but is NOT guaranteed <= alpha at every
+    one — it can exceed nominal slightly where the discrete distribution
+    lines up badly. The default drift test stays plain Fisher; choose
+    mid-p (statistics.drift_test: fisher_midp) when small-suite power
+    matters more than a hard worst-case size guarantee.
+    """
+    if n_a == 0 or n_b == 0:
+        raise ValueError("both runs must contain at least one item")
+    if not (0 <= successes_a <= n_a and 0 <= successes_b <= n_b):
+        raise ValueError("successes must be between 0 and n for each run")
+    total_pass = successes_a + successes_b
+    total = n_a + n_b
+    log_denom = _log_comb(total, total_pass)
+
+    def logpmf(k: int) -> float:
+        return _log_comb(n_a, k) + _log_comb(n_b, total_pass - k) - log_denom
+
+    observed = logpmf(successes_a)
+    tol = 1e-7  # tolerance for float ties
+    k_min = max(0, total_pass - n_b)
+    k_max = min(total_pass, n_a)
+    p = 0.0
+    for k in range(k_min, k_max + 1):
+        lp = logpmf(k)
+        if lp < observed - tol:
+            p += math.exp(lp)
+        elif lp <= observed + tol:
+            p += 0.5 * math.exp(lp)
+    return min(1.0, p)
+
+
 @dataclass
 class DriftResult:
     rate_a: float
@@ -99,19 +178,32 @@ class DriftResult:
 
 
 def drift_test(
-    successes_a: int, n_a: int, successes_b: int, n_b: int, alpha: float = 0.05
+    successes_a: int,
+    n_a: int,
+    successes_b: int,
+    n_b: int,
+    alpha: float = 0.05,
+    method: str = "fisher_exact",
 ) -> DriftResult:
-    """Did the pass rate change between two runs? Fisher's exact, two-sided.
+    """Did the pass rate change between two runs? Two-sided, exact.
 
     Frames ongoing monitoring as a falsifiable statistical question rather
-    than a side-by-side eyeball comparison. `significant` is the single-test
-    decision; when several suites are compared at once, apply
-    `holm_adjust` to the family of p-values instead.
+    than a side-by-side eyeball comparison. `method` is 'fisher_exact'
+    (default: size guaranteed <= alpha at every sample size) or
+    'fisher_midp' (more power at tiny n; size ~= alpha on average, not
+    guaranteed). `significant` is the single-test decision; when several
+    suites are compared at once, apply `holm_adjust` to the family of
+    p-values instead.
     """
+    if method == "fisher_exact":
+        p_value = fisher_exact_pvalue(successes_a, n_a, successes_b, n_b)
+    elif method == "fisher_midp":
+        p_value = fisher_midp_pvalue(successes_a, n_a, successes_b, n_b)
+    else:
+        raise ValueError(f"unknown drift test method: {method!r}")
     p_a = successes_a / n_a if n_a else 0.0
     p_b = successes_b / n_b if n_b else 0.0
-    p_value = fisher_exact_pvalue(successes_a, n_a, successes_b, n_b)
-    return DriftResult(p_a, p_b, p_value, p_value < alpha)
+    return DriftResult(p_a, p_b, p_value, p_value < alpha, method=method)
 
 
 def holm_adjust(p_values: list[float]) -> list[float]:
@@ -181,45 +273,59 @@ def _binom_sf(k: int, n: int, p: float) -> float:
     return min(1.0, total)
 
 
-def _min_passes_to_settle_pass(n: int, threshold: float) -> int | None:
-    """Smallest k with wilson_low(k, n) >= threshold, or None."""
-    if wilson_interval(n, n)[0] < threshold:
+def _interval_fn(interval: str):
+    if interval == "wilson":
+        return wilson_interval
+    if interval == "clopper_pearson":
+        return clopper_pearson_interval
+    raise ValueError(f"unknown interval method: {interval!r}")
+
+
+def _min_passes_to_settle_pass(n: int, threshold: float, ifn) -> int | None:
+    """Smallest k with interval_low(k, n) >= threshold, or None."""
+    if ifn(n, n)[0] < threshold:
         return None
     lo, hi = 0, n
     while lo < hi:
         mid = (lo + hi) // 2
-        if wilson_interval(mid, n)[0] >= threshold:
+        if ifn(mid, n)[0] >= threshold:
             hi = mid
         else:
             lo = mid + 1
     return lo
 
 
-def _max_passes_to_settle_fail(n: int, threshold: float) -> int | None:
-    """Largest k with wilson_high(k, n) < threshold, or None."""
-    if wilson_interval(0, n)[1] >= threshold:
+def _max_passes_to_settle_fail(n: int, threshold: float, ifn) -> int | None:
+    """Largest k with interval_high(k, n) < threshold, or None."""
+    if ifn(0, n)[1] >= threshold:
         return None
     lo, hi = 0, n
     while lo < hi:
         mid = (lo + hi + 1) // 2
-        if wilson_interval(mid, n)[1] < threshold:
+        if ifn(mid, n)[1] < threshold:
             lo = mid
         else:
             hi = mid - 1
     return lo
 
 
-def _settle_power(n: int, planning_rate: float, threshold: float, direction: str) -> float:
+def _settle_power(
+    n: int, planning_rate: float, threshold: float, direction: str, ifn
+) -> float:
     """P[the verdict settles at sample size n] if items are iid Bernoulli(planning_rate)."""
     if direction == "PASS":
-        k = _min_passes_to_settle_pass(n, threshold)
+        k = _min_passes_to_settle_pass(n, threshold, ifn)
         return 0.0 if k is None else _binom_sf(k, n, planning_rate)
-    k = _max_passes_to_settle_fail(n, threshold)
+    k = _max_passes_to_settle_fail(n, threshold, ifn)
     return 0.0 if k is None else _binom_cdf(k, n, planning_rate)
 
 
 def sample_size_certificate(
-    successes: int, n: int, threshold: float, power: float = 0.80
+    successes: int,
+    n: int,
+    threshold: float,
+    power: float = 0.80,
+    interval: str = "wilson",
 ) -> dict:
     """How many items would it take to settle this verdict?
 
@@ -235,6 +341,7 @@ def sample_size_certificate(
     """
     if n <= 0:
         raise ValueError("n must be positive")
+    ifn = _interval_fn(interval)
     rate = successes / n
     direction = "PASS" if rate >= threshold else "FAIL"
     result = {
@@ -243,7 +350,7 @@ def sample_size_certificate(
         "requested_power": power,
         "n_current": n,
     }
-    low, high = wilson_interval(successes, n)
+    low, high = ifn(successes, n)
     if (direction == "PASS" and low >= threshold) or (
         direction == "FAIL" and high < threshold
     ):
@@ -260,7 +367,10 @@ def sample_size_certificate(
     # Exponential search for a sample size with enough power, then binary
     # refinement. Power is monotone up to a small binomial sawtooth.
     n_hi = max(n, 8)
-    while n_hi <= _CERTIFICATE_N_MAX and _settle_power(n_hi, rate, threshold, direction) < power:
+    while (
+        n_hi <= _CERTIFICATE_N_MAX
+        and _settle_power(n_hi, rate, threshold, direction, ifn) < power
+    ):
         n_hi *= 2
     if n_hi > _CERTIFICATE_N_MAX:
         result.update(
@@ -274,7 +384,7 @@ def sample_size_certificate(
     lo, hi = n, n_hi
     while lo < hi:
         mid = (lo + hi) // 2
-        if _settle_power(mid, rate, threshold, direction) >= power:
+        if _settle_power(mid, rate, threshold, direction, ifn) >= power:
             hi = mid
         else:
             lo = mid + 1
@@ -283,7 +393,7 @@ def sample_size_certificate(
         status="ok",
         n_required=n_required,
         additional_items=max(0, n_required - n),
-        achieved_power=_settle_power(n_required, rate, threshold, direction),
+        achieved_power=_settle_power(n_required, rate, threshold, direction, ifn),
     )
     return result
 
@@ -448,6 +558,7 @@ def threshold_verdict(
     threshold: float,
     item_passed: list[bool] | None = None,
     clusters: list[str] | None = None,
+    interval: str = "wilson",
 ) -> dict:
     """Point estimate plus interval-aware verdict against a threshold.
 
@@ -455,10 +566,18 @@ def threshold_verdict(
     'PASS (point)' means the point estimate clears it but the interval
     does not — i.e. the sample is too small to call it settled evidence.
 
+    `interval` is 'wilson' (default: ~nominal average coverage) or
+    'clopper_pearson' (strict mode: guaranteed >= 95% coverage at every
+    (n, p), systematically wider).
+
     When `clusters` is given, the interval (and therefore the verdict) uses
     the cluster-adjusted effective sample size, so correlated items can't
-    masquerade as independent evidence.
+    masquerade as independent evidence. Clustering overrides strict mode:
+    Clopper-Pearson's guarantee is for iid binomial sampling only, so the
+    cluster-adjusted Wilson/t machinery is used and `ci_method` says so —
+    a strict label on a clustered interval would be a false promise.
     """
+    _interval_fn(interval)  # validate the name even on the clustered path
     rate = successes / n if n else 0.0
     cluster_info: dict | None = None
     if clusters is not None and item_passed is not None and n > 0:
@@ -472,7 +591,7 @@ def threshold_verdict(
         low, high = _wilson_from_rate(rate, cluster_info["n_eff"], z=crit)
         cluster_info["critical_value"] = crit
     else:
-        low, high = wilson_interval(successes, n)
+        low, high = _interval_fn(interval)(successes, n)
     if low >= threshold:
         verdict = "PASS"
     elif rate >= threshold:
@@ -490,7 +609,9 @@ def threshold_verdict(
     }
     if cluster_info is not None:
         out["ci_method"] = "wilson_cluster_adjusted"
+        if interval == "clopper_pearson":
+            out["strict_interval_overridden_by_clustering"] = True
         out.update(cluster_info)
     else:
-        out["ci_method"] = "wilson"
+        out["ci_method"] = interval
     return out

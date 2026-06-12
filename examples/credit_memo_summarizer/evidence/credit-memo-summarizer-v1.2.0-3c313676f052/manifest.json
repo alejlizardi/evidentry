@@ -1,7 +1,7 @@
 {
   "baseline_pack": null,
   "config_sha256": "82bd4819f90ccb87022132744655db14092450aab65f36bd483b344d5e21666d",
-  "created_utc": "2026-06-12T00:40:20+00:00",
+  "created_utc": "2026-06-12T00:54:36+00:00",
   "dataset_sha256": {
     "dataset_accuracy.jsonl": "69c6a07b49f4bd7a594f4bec7ea04f2d577728f6cdbebee0f6e673eb80e48992",
     "dataset_numeric.jsonl": "bab21478427890b72ee7114302f60c2e314bbf235e23487d9c31e090afc2241c",
@@ -9,8 +9,8 @@
   },
   "evidentry_version": "0.3.0",
   "files": {
-    "report.md": "f9cd50422d66e39d09f23803c56f85b033d057aa734986a3f4c4186d1bdd8d85",
-    "results.json": "82a3ddacba721d06ca57d6413839ee020b5215915fe83d6a053406aaef993b24"
+    "report.md": "b620b3868f0bc895be43ba00fe2aa502e1d7626665ae62ae8198f75c14ea03bd",
+    "results.json": "387b7ea65be5643a10ac197fcf09dfd08f430f43d7ec095502afe73d597b1011"
   },
   "model": {
     "description": "",
@@ -27,5 +27,5 @@
     "vendor": "internal",
     "version": "1.2.0"
   },
-  "pack_id": "561e026efd6ae74f02476e2c55e6237d59b02f393288908daf5ecec0131d960a"
+  "pack_id": "3c313676f052238a7ee4b3bda3f62738654160746b0dab8199a198e93d1b0b19"
 }
