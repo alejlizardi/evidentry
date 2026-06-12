@@ -49,6 +49,21 @@ because a judge's verdict is a measurement, not ground truth.
     plain Fisher remains the default. The report's drift section explains
     whichever test produced its p-values.
 
+- **`evidentry ingest promptfoo|inspect <file>`**: format adapters that
+  convert a promptfoo version-3 results JSON or an Inspect AI JSON log
+  (`inspect log dump` for `.eval` binaries) into the external-ingestion
+  pair (`dataset.jsonl` + `outputs.jsonl`). Adapters extract id, input,
+  and the raw model output only — evidentry re-scores with its own
+  metrics; the source tool's assertions and scores are never imported.
+  Honesty rules built in: errored items (no model output) are skipped and
+  counted out loud; multi-prompt promptfoo runs require an explicit
+  `--prompt-idx` (a dataset mixing prompts is not one suite's evidence);
+  Inspect multi-epoch samples become distinct suffixed items with a
+  clustering hint; Inspect list targets are carried with a warning that
+  `contains` requires ALL substrings while Inspect's lists usually mean
+  any-of. No DeepEval adapter: its export format isn't documented stably
+  enough to pin against.
+
 ### Honest limits (stated in README and report)
 - Judge *self*-consistency is not yet modeled: judge suites are restricted
   to `runs: 1` rather than treating correlated judging events as
@@ -57,10 +72,12 @@ because a judge's verdict is a measurement, not ground truth.
   but flagged in bold as producing no disagreement evidence.
 
 ### Tests
-- 84 → 130 unit tests, including a hand-computed κ pin, end-to-end
+- 84 → 145 unit tests, including a hand-computed κ pin, end-to-end
   judge-run regressions, the mid-p hand value (5/5 vs 2/5 → exactly 1/12),
   Clopper-Pearson's defining tail identities and an exact-coverage check,
-  and strict-mode/mid-p config plumbing end-to-end.
+  strict-mode/mid-p config plumbing end-to-end, and ingest fixtures pinned
+  to the documented promptfoo/Inspect schemas with an ingest→run→pack
+  end-to-end test.
 
 ## 0.2.0 — 2026-06-11
 
