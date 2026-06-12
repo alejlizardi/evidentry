@@ -33,7 +33,7 @@ What the statistics honestly mean — and don't: the intervals quantify sampling
 ## Quickstart
 
 ```bash
-pip install -e .          # from this directory (PyPI release pending)
+pip install evidentry
 evidentry init my-model   # scaffold config + sample dataset
 cd my-model
 evidentry run             # works out of the box with the mock provider

@@ -1,0 +1,52 @@
+name: Release
+
+# Publishes to PyPI via trusted publishing (no API token in secrets).
+# Triggers: publishing a GitHub release, or manual dispatch from main
+# (the manual path exists so v0.2.0 — tagged before this workflow — can
+# be published without moving the tag).
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build + test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: pip install -e . build twine
+      - name: Unit tests
+        run: python -m unittest discover -s tests -v
+      - name: Build distributions
+        run: python -m build
+      - name: Twine check
+        run: python -m twine check dist/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    name: publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/evidentry
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v5
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
