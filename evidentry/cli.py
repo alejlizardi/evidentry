@@ -53,6 +53,12 @@ suites:
     #       type: openai
     #       model_id: gpt-4o-mini
 
+# statistics:
+#   intervals: wilson         # or clopper_pearson (strict mode: guaranteed
+#                             # >=95% coverage at every n, wider intervals)
+#   drift_test: fisher_exact  # or fisher_midp (more small-n power, size
+#                             # ~alpha on average rather than guaranteed)
+
 report:
   mappings: [sr-26-2]         # sr-26-2 | eu-ai-act-annex-iv
   out_dir: evidence
@@ -124,7 +130,7 @@ def cmd_diff(args: argparse.Namespace) -> int:
     if drift is None:
         print("No overlapping suites between the two packs.", file=sys.stderr)
         return 1
-    print(f"Drift vs baseline {args.baseline} (Fisher exact, Holm-adjusted):")
+    print(f"Drift vs baseline {args.baseline} ({drift['method']}):")
     any_drift = False
     for row in drift["suites"]:
         rates = f"{100 * row['rate_a']:.1f}% -> {100 * row['rate_b']:.1f}%"

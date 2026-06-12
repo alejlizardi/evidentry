@@ -45,7 +45,9 @@ def file_sha256(path: Path) -> str:
     return h.hexdigest()
 
 
-def run_suite(suite: SuiteConfig, provider: Provider, base_dir: Path) -> dict[str, Any]:
+def run_suite(
+    suite: SuiteConfig, provider: Provider, base_dir: Path, intervals: str = "wilson"
+) -> dict[str, Any]:
     dataset_path = base_dir / suite.dataset
     items = load_dataset(dataset_path)
     judges = make_judges(suite.judge, base_dir) if suite.judge is not None else None
@@ -109,7 +111,12 @@ def run_suite(suite: SuiteConfig, provider: Provider, base_dir: Path) -> dict[st
     if any("cluster" in it for it in item_results):
         clusters = [it.get("cluster", f"__solo_{it['id']}") for it in item_results]
     verdict = threshold_verdict(
-        passes, len(items), suite.threshold, item_passed=passed_flags, clusters=clusters
+        passes,
+        len(items),
+        suite.threshold,
+        item_passed=passed_flags,
+        clusters=clusters,
+        interval=intervals,
     )
     if verdict["verdict"].endswith("(point)"):
         # Unsettled verdict: attach the exact-binomial sample-size
@@ -121,12 +128,14 @@ def run_suite(suite: SuiteConfig, provider: Provider, base_dir: Path) -> dict[st
             cert = sample_size_certificate(s_plan, n_plan, suite.threshold)
             cert["approximate_under_clustering"] = True
         else:
-            cert = sample_size_certificate(passes, len(items), suite.threshold)
+            cert = sample_size_certificate(
+                passes, len(items), suite.threshold, interval=intervals
+            )
         verdict["sample_size_certificate"] = cert
     extra: dict[str, Any] = {}
     if suite.judge is not None:
         extra["judge_evidence"] = judge_evidence(
-            suite.judge, item_results, suite.threshold, clusters=clusters
+            suite.judge, item_results, suite.threshold, clusters=clusters, interval=intervals
         )
     return {
         "suite": suite.name,
@@ -147,11 +156,15 @@ def run_suite(suite: SuiteConfig, provider: Provider, base_dir: Path) -> dict[st
 
 def run_all(config: Config) -> dict[str, Any]:
     provider = make_provider(config.provider, config.base_dir)
-    suites = [run_suite(s, provider, config.base_dir) for s in config.suites]
+    suites = [
+        run_suite(s, provider, config.base_dir, intervals=config.intervals)
+        for s in config.suites
+    ]
     return {
         "model": config.model.to_dict(),
         "provider": provider.describe(),
         "config_sha256": config.canonical_hash(),
+        "statistics": {"intervals": config.intervals, "drift_test": config.drift_test},
         "suites": suites,
         "summary": {
             "total_suites": len(suites),

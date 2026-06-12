@@ -31,7 +31,7 @@ from typing import Any
 
 from .config import JudgeConfig, JudgeSpec, ProviderConfig
 from .providers import AnthropicProvider, OpenAIProvider
-from .stats import cohen_kappa, threshold_verdict, wilson_interval
+from .stats import clopper_pearson_interval, cohen_kappa, threshold_verdict, wilson_interval
 
 JUDGE_PROMPT = """\
 You are evaluating whether a model output satisfies a quality criterion.
@@ -174,6 +174,7 @@ def judge_evidence(
     item_results: list[dict[str, Any]],
     threshold: float,
     clusters: list[str] | None = None,
+    interval: str = "wilson",
 ) -> dict[str, Any]:
     """Suite-level judge-disagreement evidence, assembled from per-item
     verdicts (each item's first run carries a ``judges`` list; judge suites
@@ -234,6 +235,7 @@ def judge_evidence(
             threshold,
             item_passed=[x == "pass" for x in by_judge[name]],
             clusters=clusters,
+            interval=interval,
         )
         directions.add(rate >= threshold)
         per_judge.append(
@@ -272,10 +274,12 @@ def judge_evidence(
             cfg.min_agreement,
             item_passed=agree_flags,
             clusters=clusters,
+            interval=interval,
         )
         agreement["min_agreement"] = cfg.min_agreement
     else:
-        low, high = wilson_interval(agree_count, n_items)
+        ifn = clopper_pearson_interval if interval == "clopper_pearson" else wilson_interval
+        low, high = ifn(agree_count, n_items)
         agreement["ci95_low"] = low
         agreement["ci95_high"] = high
     out["agreement"] = agreement

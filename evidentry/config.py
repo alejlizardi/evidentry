@@ -14,6 +14,8 @@ VALID_METRICS = {"exact_match", "contains", "regex", "numeric", "refusal", "judg
 VALID_PROVIDERS = {"mock", "anthropic", "openai", "external"}
 VALID_JUDGE_TYPES = {"mock", "anthropic", "openai", "external"}
 VALID_JUDGE_DECISIONS = {"unanimous", "majority"}
+VALID_INTERVALS = {"wilson", "clopper_pearson"}
+VALID_DRIFT_TESTS = {"fisher_exact", "fisher_midp"}
 
 
 class ConfigError(ValueError):
@@ -122,6 +124,10 @@ class Config:
     mappings: list[str]
     out_dir: str
     base_dir: Path
+    # statistics options: 'wilson' (default) or 'clopper_pearson' (strict
+    # mode); 'fisher_exact' (default) or 'fisher_midp' for drift testing.
+    intervals: str = "wilson"
+    drift_test: str = "fisher_exact"
 
     def canonical_hash(self) -> str:
         """Stable SHA-256 over the semantic content of the config."""
@@ -150,6 +156,15 @@ class Config:
             ],
             "mappings": self.mappings,
         }
+        # Only present when non-default, so hashes of configs written
+        # before these options existed are unchanged.
+        stats_block: dict[str, Any] = {}
+        if self.intervals != "wilson":
+            stats_block["intervals"] = self.intervals
+        if self.drift_test != "fisher_exact":
+            stats_block["drift_test"] = self.drift_test
+        if stats_block:
+            payload["statistics"] = stats_block
         blob = json.dumps(payload, sort_keys=True, separators=(",", ":"))
         return hashlib.sha256(blob.encode("utf-8")).hexdigest()
 
@@ -292,6 +307,16 @@ def load_config(path: str | Path) -> Config:
             )
         )
 
+    stats_raw = raw.get("statistics", {}) or {}
+    intervals = str(stats_raw.get("intervals", "wilson"))
+    if intervals not in VALID_INTERVALS:
+        raise ConfigError(f"statistics.intervals must be one of {sorted(VALID_INTERVALS)}")
+    drift_test = str(stats_raw.get("drift_test", "fisher_exact"))
+    if drift_test not in VALID_DRIFT_TESTS:
+        raise ConfigError(
+            f"statistics.drift_test must be one of {sorted(VALID_DRIFT_TESTS)}"
+        )
+
     report = raw.get("report", {})
     return Config(
         model=model,
@@ -300,4 +325,6 @@ def load_config(path: str | Path) -> Config:
         mappings=[str(x) for x in report.get("mappings", ["sr-26-2"])],
         out_dir=str(report.get("out_dir", "evidence")),
         base_dir=path.parent.resolve(),
+        intervals=intervals,
+        drift_test=drift_test,
     )

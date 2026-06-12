@@ -17,6 +17,10 @@
     "model_id": "bank-internal-llm-v1.2",
     "type": "mock"
   },
+  "statistics": {
+    "drift_test": "fisher_exact",
+    "intervals": "wilson"
+  },
   "suites": [
     {
       "ci95_high": 0.8318196702937638,

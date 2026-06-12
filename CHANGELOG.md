@@ -33,6 +33,21 @@ because a judge's verdict is a measurement, not ground truth.
   a faithfulness suite exhibiting real disagreement, an invalid judge
   response, an unsettled agreement verdict, and a judge-dependent result —
   with its committed evidence pack verified from a fresh checkout in CI.
+- **Statistics options** (`statistics:` block; defaults unchanged, and
+  configs without the block keep their existing config hashes):
+  - `intervals: clopper_pearson` — strict mode: exact-conservative
+    intervals for verdicts and sample-size certificates, coverage
+    guaranteed ≥95% at every (n, p) (verified exactly in the validation
+    study: min coverage 0.9534; implementation cross-checked against an
+    independent tail-search to 2e-15). Clustered suites override strict
+    mode back to the cluster-adjusted interval — a strict label on
+    correlated data would be a false promise — and the report says so.
+  - `drift_test: fisher_midp` — mid-p Fisher for run-over-run drift:
+    equally-probable tables get half weight, recovering real small-n power
+    (0.22 → 0.33 at 8 items/run against a 0.9 → 0.5 drift, exact). Stated
+    cost: worst-case size 0.057 at n=50, above nominal — which is why
+    plain Fisher remains the default. The report's drift section explains
+    whichever test produced its p-values.
 
 ### Honest limits (stated in README and report)
 - Judge *self*-consistency is not yet modeled: judge suites are restricted
@@ -42,8 +57,10 @@ because a judge's verdict is a measurement, not ground truth.
   but flagged in bold as producing no disagreement evidence.
 
 ### Tests
-- 84 → 114 unit tests, including a hand-computed κ pin and end-to-end
-  judge-run regression tests.
+- 84 → 130 unit tests, including a hand-computed κ pin, end-to-end
+  judge-run regressions, the mid-p hand value (5/5 vs 2/5 → exactly 1/12),
+  Clopper-Pearson's defining tail identities and an exact-coverage check,
+  and strict-mode/mid-p config plumbing end-to-end.
 
 ## 0.2.0 — 2026-06-11
 

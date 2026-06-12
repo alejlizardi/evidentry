@@ -63,6 +63,10 @@ def compare_packs(
     if not baseline_results_path.exists():
         raise FileNotFoundError(f"No results.json in baseline pack: {baseline_dir}")
     baseline = json.loads(baseline_results_path.read_text(encoding="utf-8"))
+    # The current run's configured drift test applies (default: plain
+    # Fisher, size guaranteed <= alpha; fisher_midp recovers small-n power
+    # at the cost of that hard guarantee).
+    method = (results.get("statistics") or {}).get("drift_test", "fisher_exact")
     by_name = {s["suite"]: s for s in baseline["suites"]}
     rows = []
     for s in results["suites"]:
@@ -88,7 +92,10 @@ def compare_packs(
             row["comparable"] = False
             row["reason"] = "; ".join(reasons)
         else:
-            d = drift_test(prior["n_passed"], prior["n_items"], s["n_passed"], s["n_items"])
+            d = drift_test(
+                prior["n_passed"], prior["n_items"], s["n_passed"], s["n_items"],
+                method=method,
+            )
             row["comparable"] = True
             row["p_value"] = d.p_value
             row["method"] = d.method
@@ -104,7 +111,7 @@ def compare_packs(
     return {
         "baseline_pack": Path(baseline_dir).name,
         "alpha": alpha,
-        "method": "fisher_exact, holm_adjusted",
+        "method": f"{method}, holm_adjusted",
         "suites": rows,
     }
 
