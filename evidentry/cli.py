@@ -93,6 +93,9 @@ def cmd_run(args: argparse.Namespace) -> int:
     except ConfigError as exc:
         print(f"Config error: {exc}", file=sys.stderr)
         return 1
+    if args.fail_on_drift and not args.baseline:
+        print("--fail-on-drift requires --baseline", file=sys.stderr)
+        return 1
     results = run_all(config)
     baseline = Path(args.baseline).resolve() if args.baseline else None
     pack_dir = build_pack(config, results, baseline=baseline)
@@ -106,8 +109,26 @@ def cmd_run(args: argparse.Namespace) -> int:
         je = s.get("judge_evidence")
         marker = " [JUDGE-DEPENDENT]" if je and je.get("judge_dependent") else ""
         print(f"  - {s['suite']}: {s['verdict']} ({s['n_passed']}/{s['n_items']}){marker}")
+    drifted: list[str] = []
+    if args.fail_on_drift:
+        # Recompute against the same baseline build_pack used; significance
+        # is the Holm-adjusted decision, so monitoring many suites in CI
+        # doesn't fail builds at an inflated family-wise rate.
+        drift = compare_packs(baseline, results)
+        if drift is not None:
+            drifted = [r["suite"] for r in drift["suites"] if r.get("significant")]
+            for r in drift["suites"]:
+                if r.get("significant"):
+                    print(
+                        f"  DRIFT: {r['suite']} {100 * r['rate_a']:.1f}% -> "
+                        f"{100 * r['rate_b']:.1f}% (holm p={r['p_holm']:.4f})"
+                    )
     any_fail = any(s["verdict"].startswith("FAIL") for s in results["suites"])
-    return 2 if any_fail else 0
+    if any_fail:
+        return 2
+    if drifted:
+        return 3
+    return 0
 
 
 def cmd_verify(args: argparse.Namespace) -> int:
@@ -198,10 +219,28 @@ def main(argv: list[str] | None = None) -> int:
     p_init.add_argument("--force", action="store_true", help="Overwrite existing files")
     p_init.set_defaults(func=cmd_init)
 
-    p_run = sub.add_parser("run", help="Run eval suites and build an evidence pack")
+    p_run = sub.add_parser(
+        "run",
+        help="Run eval suites and build an evidence pack",
+        description=(
+            "Exit codes: 0 = all suites at or above threshold; 2 = a suite's "
+            "verdict is FAIL or FAIL (point); 3 = thresholds held but "
+            "--fail-on-drift detected significant drift vs the baseline; "
+            "1 = configuration or usage error."
+        ),
+    )
     p_run.add_argument("-c", "--config", default="evidentry.yaml")
     p_run.add_argument(
         "--baseline", help="Path to a prior evidence pack for drift comparison", default=None
+    )
+    p_run.add_argument(
+        "--fail-on-drift",
+        action="store_true",
+        help=(
+            "Exit 3 when any suite shows significant drift vs the baseline "
+            "(Holm-adjusted, so monitoring many suites doesn't inflate the "
+            "family-wise false-failure rate)"
+        ),
     )
     p_run.set_defaults(func=cmd_run)
 
