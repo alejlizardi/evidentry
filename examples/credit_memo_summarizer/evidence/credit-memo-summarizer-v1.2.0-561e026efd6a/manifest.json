@@ -1,15 +1,15 @@
 {
   "baseline_pack": null,
   "config_sha256": "82bd4819f90ccb87022132744655db14092450aab65f36bd483b344d5e21666d",
-  "created_utc": "2026-06-11T18:18:54+00:00",
+  "created_utc": "2026-06-12T00:40:20+00:00",
   "dataset_sha256": {
     "dataset_accuracy.jsonl": "69c6a07b49f4bd7a594f4bec7ea04f2d577728f6cdbebee0f6e673eb80e48992",
     "dataset_numeric.jsonl": "bab21478427890b72ee7114302f60c2e314bbf235e23487d9c31e090afc2241c",
     "dataset_refusal.jsonl": "e73a72c0d3873dc39cd826694bc504ba3bfc5d6194f6e3913af65b228220cf3c"
   },
-  "evidentry_version": "0.2.0",
+  "evidentry_version": "0.3.0",
   "files": {
-    "report.md": "d38d4630280bced1f26b7449cfdd386cbad871c476e8f0f4ef76e4926e59843e",
+    "report.md": "f9cd50422d66e39d09f23803c56f85b033d057aa734986a3f4c4186d1bdd8d85",
     "results.json": "82a3ddacba721d06ca57d6413839ee020b5215915fe83d6a053406aaef993b24"
   },
   "model": {

@@ -90,6 +90,79 @@ def _cell(text: Any) -> str:
     return " ".join(str(text).split())
 
 
+def _render_judge_evidence(add, je: dict[str, Any]) -> None:
+    """Judge-disagreement evidence for one suite. The judges are part of
+    the measurement instrument, so their reliability is reported alongside
+    what they measured — including, loudly, when the headline verdict
+    depends on which judge you believe."""
+    panel = ", ".join(
+        f"`{j['name']}` ({j['type']}{'/' + j['model_id'] if j['model_id'] else ''})"
+        for j in je["judges"]
+    )
+    add(f"- Judge panel ({je['n_judges']}): {panel}; decision rule: **{je['decision']}**")
+    add(f"- Rubric: {_cell(je['rubric'])}")
+    if je["n_judges"] == 1:
+        add(
+            "- **Single judge — no disagreement evidence.** This suite's scores "
+            "rest entirely on one judge being right; agreement statistics "
+            "require a panel of at least two."
+        )
+    else:
+        agr = je["agreement"]
+        if "settledness" in agr:
+            sv = agr["settledness"]
+            add(
+                f"- Panel agreement: {_pct(agr['rate'])} of items "
+                f"({agr['n_agreed']}/{je['n_items']}), 95% CI "
+                f"[{_pct(sv['ci95_low'])}, {_pct(sv['ci95_high'])}] vs required "
+                f"{_pct(agr['min_agreement'])} — agreement verdict **{sv['verdict']}**"
+            )
+        else:
+            add(
+                f"- Panel agreement: {_pct(agr['rate'])} of items "
+                f"({agr['n_agreed']}/{je['n_items']}), 95% CI "
+                f"[{_pct(agr['ci95_low'])}, {_pct(agr['ci95_high'])}]"
+            )
+        for pw in je["pairwise"]:
+            if pw["kappa"] is not None:
+                add(
+                    f"- `{pw['judge_a']}` vs `{pw['judge_b']}`: raw agreement "
+                    f"{_pct(pw['observed_agreement'])}, chance-corrected κ = {pw['kappa']:.2f} "
+                    f"(over {pw['n_pairs']} items where both verdicts were valid)"
+                )
+            elif pw["observed_agreement"] is not None:
+                add(
+                    f"- `{pw['judge_a']}` vs `{pw['judge_b']}`: raw agreement "
+                    f"{_pct(pw['observed_agreement'])}; κ undefined (no variation "
+                    "to correct for chance — the raw rate is the honest number)"
+                )
+            else:
+                add(
+                    f"- `{pw['judge_a']}` vs `{pw['judge_b']}`: no items where "
+                    "both verdicts were valid"
+                )
+        rates = ", ".join(
+            f"`{p['name']}` {_pct(p['pass_rate'])} ({p['verdict']})" for p in je["per_judge"]
+        )
+        if je["judge_dependent"]:
+            add(
+                f"- **JUDGE-DEPENDENT:** the pass rate's side of the threshold flips "
+                f"with the choice of judge — {rates}. Treat the suite verdict as "
+                "unsettled judge evidence, not a property of the model."
+            )
+        else:
+            add(f"- Judge sensitivity: verdict direction stable across judges ({rates})")
+    if je["n_invalid_responses"] > 0:
+        per = ", ".join(
+            f"`{name}`: {count}" for name, count in je["invalid_by_judge"].items() if count
+        )
+        add(
+            f"- **{je['n_invalid_responses']} unparseable judge response(s)** recorded as "
+            f"`invalid` and counted against agreement and item passes ({per}) — "
+            "never silently coerced to a verdict"
+        )
+
+
 def render_markdown(
     results: dict[str, Any],
     mappings: list[str],
@@ -139,7 +212,9 @@ def render_markdown(
     add("settle them, by exact binomial power at the observed rate. Suites")
     add("whose items declare a `cluster` (a shared source document or template)")
     add("use cluster-adjusted intervals, so correlated items are not counted")
-    add("as independent evidence.")
+    add("as independent evidence. Suites scored by LLM judges carry their own")
+    add("judge-disagreement evidence in the suite detail below — a judge's")
+    add("verdict is a measurement, not ground truth.")
     add("")
     add("| Suite | Metric | Items | Pass rate | 95% CI | Threshold | Verdict |")
     add("|---|---|---|---|---|---|---|")
@@ -168,6 +243,9 @@ def render_markdown(
                 f"{s['deff']:.2f}, effective sample size {s['n_eff']:.1f} — "
                 "the interval and verdict use the effective sample size"
             )
+        je = s.get("judge_evidence")
+        if je is not None:
+            _render_judge_evidence(add, je)
         add(f"- Result: {s['n_passed']}/{s['n_items']} items passed — verdict **{s['verdict']}**")
         cert = s.get("sample_size_certificate")
         if cert is not None:

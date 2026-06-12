@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from .config import Config, SuiteConfig
+from .judges import consensus, judge_evidence, make_judges
 from .metrics import score
 from .providers import Provider, make_provider
 from .stats import sample_size_certificate, threshold_verdict
@@ -47,6 +48,7 @@ def file_sha256(path: Path) -> str:
 def run_suite(suite: SuiteConfig, provider: Provider, base_dir: Path) -> dict[str, Any]:
     dataset_path = base_dir / suite.dataset
     items = load_dataset(dataset_path)
+    judges = make_judges(suite.judge, base_dir) if suite.judge is not None else None
 
     item_results: list[dict[str, Any]] = []
     passes = 0
@@ -55,9 +57,35 @@ def run_suite(suite: SuiteConfig, provider: Provider, base_dir: Path) -> dict[st
         run_passes = 0
         for run_idx in range(suite.runs):
             output = provider.complete(item)
-            passed, detail = score(suite.metric, output, item.get("expected"), suite.metric_options)
+            if judges is not None:
+                # Every judge's verdict and raw response goes into the pack:
+                # the judges are part of the measurement instrument, and a
+                # reviewer must be able to audit them, not just the judged.
+                judged = []
+                for judge in judges:
+                    verdict, raw = judge.judge(item, output, suite.judge.rubric)
+                    judged.append(
+                        {"judge": judge.spec.name, "verdict": verdict, "response": raw}
+                    )
+                passed = consensus([j["verdict"] for j in judged], suite.judge.decision)
+                detail = (
+                    f"{suite.judge.decision}: "
+                    + ", ".join(f"{j['judge']}={j['verdict']}" for j in judged)
+                )
+                run_row = {
+                    "run": run_idx + 1,
+                    "output": output,
+                    "passed": passed,
+                    "detail": detail,
+                    "judges": judged,
+                }
+            else:
+                passed, detail = score(
+                    suite.metric, output, item.get("expected"), suite.metric_options
+                )
+                run_row = {"run": run_idx + 1, "output": output, "passed": passed, "detail": detail}
             run_passes += int(passed)
-            runs.append({"run": run_idx + 1, "output": output, "passed": passed, "detail": detail})
+            runs.append(run_row)
         # An item passes only if every repetition passes: consistency is part
         # of the evidence when runs > 1.
         item_passed = run_passes == suite.runs
@@ -95,6 +123,11 @@ def run_suite(suite: SuiteConfig, provider: Provider, base_dir: Path) -> dict[st
         else:
             cert = sample_size_certificate(passes, len(items), suite.threshold)
         verdict["sample_size_certificate"] = cert
+    extra: dict[str, Any] = {}
+    if suite.judge is not None:
+        extra["judge_evidence"] = judge_evidence(
+            suite.judge, item_results, suite.threshold, clusters=clusters
+        )
     return {
         "suite": suite.name,
         "description": suite.description,
@@ -107,6 +140,7 @@ def run_suite(suite: SuiteConfig, provider: Provider, base_dir: Path) -> dict[st
         "n_items": len(items),
         "n_passed": passes,
         **verdict,
+        **extra,
         "items": item_results,
     }
 

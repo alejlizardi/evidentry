@@ -36,9 +36,22 @@ suites:
   - name: accuracy
     description: "Core task accuracy against curated golden answers."
     dataset: dataset.jsonl
-    metric: contains          # exact_match | contains | regex | numeric | refusal
+    metric: contains          # exact_match | contains | regex | numeric | refusal | judge
     threshold: 0.90
     runs: 1
+    # For graded qualities, use an LLM judge panel with disagreement evidence:
+    # metric: judge
+    # judge:
+    #   rubric: "Every factual claim in the output appears in the input."
+    #   decision: unanimous   # or majority
+    #   min_agreement: 0.90   # optional: settledness verdict on panel agreement
+    #   judges:
+    #     - name: judge-a
+    #       type: anthropic   # mock | external | anthropic | openai
+    #       model_id: claude-sonnet-4-6
+    #     - name: judge-b
+    #       type: openai
+    #       model_id: gpt-4o-mini
 
 report:
   mappings: [sr-26-2]         # sr-26-2 | eu-ai-act-annex-iv
@@ -83,7 +96,9 @@ def cmd_run(args: argparse.Namespace) -> int:
         f"(items: {summary['total_passed']}/{summary['total_items']})"
     )
     for s in results["suites"]:
-        print(f"  - {s['suite']}: {s['verdict']} ({s['n_passed']}/{s['n_items']})")
+        je = s.get("judge_evidence")
+        marker = " [JUDGE-DEPENDENT]" if je and je.get("judge_dependent") else ""
+        print(f"  - {s['suite']}: {s['verdict']} ({s['n_passed']}/{s['n_items']}){marker}")
     any_fail = any(s["verdict"].startswith("FAIL") for s in results["suites"])
     return 2 if any_fail else 0
 

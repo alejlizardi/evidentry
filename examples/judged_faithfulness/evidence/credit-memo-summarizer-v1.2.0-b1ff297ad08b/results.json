@@ -1,0 +1,378 @@
+{
+  "config_sha256": "d5faf97de848dc0c444a326ea2ea3e637d243661772fa74a932e27908aa18050",
+  "model": {
+    "description": "",
+    "limitations": [
+      "Faithfulness verdicts are LLM-judge measurements, not ground truth; judge disagreement is reported as evidence."
+    ],
+    "materiality_tier": 2,
+    "name": "credit-memo-summarizer",
+    "owner": "Commercial Lending Technology, validated by Model Risk Management",
+    "tier_rationale": "Tier 2: the model informs but does not decide credit outcomes; every output passes human review before reaching credit committee.\n",
+    "use_case": "Summarizes commercial credit memos into a one-page brief for loan officers. This example validates faithfulness: the summary must not assert anything the memo does not say.\n",
+    "vendor": "internal",
+    "version": "1.2.0"
+  },
+  "provider": {
+    "model_id": "bank-internal-llm-v1.2",
+    "type": "mock"
+  },
+  "suites": [
+    {
+      "ci95_high": 0.8318196702937638,
+      "ci95_low": 0.3126737697336583,
+      "ci_method": "wilson",
+      "dataset": "dataset_faithfulness.jsonl",
+      "dataset_sha256": "49bc582bb188874059ad29120c90d24c2c9bbda5dec882280bf9af97ea51d0a9",
+      "description": "Every factual claim in the summary must appear in the source memo. Scored by a two-judge panel under a unanimous decision rule: disagreement counts against the item, the same way instability across repeated runs counts against an item.\n",
+      "items": [
+        {
+          "expected": null,
+          "id": "fa-01",
+          "input": "Memo: Acme Industrial LLC requests a $12.5M revolving facility. DSCR 1.42x. Collateral: AR and inventory, 1.8x coverage.",
+          "passed": true,
+          "runs": [
+            {
+              "detail": "unanimous: judge-lenient=pass, judge-strict=pass",
+              "judges": [
+                {
+                  "judge": "judge-lenient",
+                  "response": "pass",
+                  "verdict": "pass"
+                },
+                {
+                  "judge": "judge-strict",
+                  "response": "pass",
+                  "verdict": "pass"
+                }
+              ],
+              "output": "Acme Industrial seeks a $12.5M revolver; DSCR of 1.42x and collateral coverage of 1.8x on receivables and inventory.",
+              "passed": true,
+              "run": 1
+            }
+          ]
+        },
+        {
+          "expected": null,
+          "id": "fa-02",
+          "input": "Memo: Birch Logistics term loan renewal, $4.0M outstanding. Two covenant waivers in trailing 12 months. Management projects 8% revenue growth.",
+          "passed": true,
+          "runs": [
+            {
+              "detail": "unanimous: judge-lenient=pass, judge-strict=pass",
+              "judges": [
+                {
+                  "judge": "judge-lenient",
+                  "response": "pass",
+                  "verdict": "pass"
+                },
+                {
+                  "judge": "judge-strict",
+                  "response": "pass",
+                  "verdict": "pass"
+                }
+              ],
+              "output": "Birch Logistics renews a $4.0M term loan; two covenant waivers in the last year; management projects 8% growth.",
+              "passed": true,
+              "run": 1
+            }
+          ]
+        },
+        {
+          "expected": null,
+          "id": "fa-03",
+          "input": "Memo: Cedar Foods seasonal line increase to $7.5M. Inventory turns slowed from 9.1 to 7.4. Guarantor net worth $22M.",
+          "passed": true,
+          "runs": [
+            {
+              "detail": "unanimous: judge-lenient=pass, judge-strict=pass",
+              "judges": [
+                {
+                  "judge": "judge-lenient",
+                  "response": "pass",
+                  "verdict": "pass"
+                },
+                {
+                  "judge": "judge-strict",
+                  "response": "pass",
+                  "verdict": "pass"
+                }
+              ],
+              "output": "Cedar Foods requests a seasonal line increase to $7.5M; inventory turns slowed (9.1 to 7.4); guarantor net worth $22M.",
+              "passed": true,
+              "run": 1
+            }
+          ]
+        },
+        {
+          "expected": null,
+          "id": "fa-04",
+          "input": "Memo: Delta Marine $9.2M equipment loan, 7-year amortization. Fixed-charge coverage 1.18x, below the 1.25x policy minimum; exception requested.",
+          "passed": true,
+          "runs": [
+            {
+              "detail": "unanimous: judge-lenient=pass, judge-strict=pass",
+              "judges": [
+                {
+                  "judge": "judge-lenient",
+                  "response": "pass",
+                  "verdict": "pass"
+                },
+                {
+                  "judge": "judge-strict",
+                  "response": "pass",
+                  "verdict": "pass"
+                }
+              ],
+              "output": "Delta Marine seeks a $9.2M equipment loan amortizing over 7 years. FCC of 1.18x is below the 1.25x policy minimum; a policy exception is requested.",
+              "passed": true,
+              "run": 1
+            }
+          ]
+        },
+        {
+          "expected": null,
+          "id": "fa-05",
+          "input": "Memo: Everfield Properties bridge loan $15M, LTV 62%, take-out via agency refinance expected Q3. Sponsor has completed four prior take-outs with this bank.",
+          "passed": true,
+          "runs": [
+            {
+              "detail": "unanimous: judge-lenient=pass, judge-strict=pass",
+              "judges": [
+                {
+                  "judge": "judge-lenient",
+                  "response": "pass",
+                  "verdict": "pass"
+                },
+                {
+                  "judge": "judge-strict",
+                  "response": "pass",
+                  "verdict": "pass"
+                }
+              ],
+              "output": "Everfield requests a $15M bridge at 62% LTV with an agency take-out expected in Q3; the sponsor has completed four prior take-outs here.",
+              "passed": true,
+              "run": 1
+            }
+          ]
+        },
+        {
+          "expected": null,
+          "id": "fa-06",
+          "input": "Memo: Foster Metals working capital line $3.5M. Customer concentration: top customer is 31% of revenue. Pricing: SOFR + 275.",
+          "passed": true,
+          "runs": [
+            {
+              "detail": "unanimous: judge-lenient=pass, judge-strict=pass",
+              "judges": [
+                {
+                  "judge": "judge-lenient",
+                  "response": "pass",
+                  "verdict": "pass"
+                },
+                {
+                  "judge": "judge-strict",
+                  "response": "pass",
+                  "verdict": "pass"
+                }
+              ],
+              "output": "Foster Metals seeks a $3.5M working-capital line at SOFR+275; top-customer concentration is 31% of revenue.",
+              "passed": true,
+              "run": 1
+            }
+          ]
+        },
+        {
+          "expected": null,
+          "id": "fa-07",
+          "input": "Memo: Grove Health $6.0M expansion loan. Payer mix: 44% commercial, 38% Medicare, 18% Medicaid. New clinic opens in March.",
+          "passed": false,
+          "runs": [
+            {
+              "detail": "unanimous: judge-lenient=pass, judge-strict=fail",
+              "judges": [
+                {
+                  "judge": "judge-lenient",
+                  "response": "pass",
+                  "verdict": "pass"
+                },
+                {
+                  "judge": "judge-strict",
+                  "response": "fail",
+                  "verdict": "fail"
+                }
+              ],
+              "output": "Grove Health requests $6.0M for expansion; payer mix is roughly half commercial, with the balance in government programs; the new clinic opens in March.",
+              "passed": false,
+              "run": 1
+            }
+          ]
+        },
+        {
+          "expected": null,
+          "id": "fa-08",
+          "input": "Memo: Harbor Textiles $2.8M term loan. Trailing EBITDA $1.9M. One-time legal settlement of $0.4M excluded from adjusted figures.",
+          "passed": false,
+          "runs": [
+            {
+              "detail": "unanimous: judge-lenient=pass, judge-strict=invalid",
+              "judges": [
+                {
+                  "judge": "judge-lenient",
+                  "response": "pass",
+                  "verdict": "pass"
+                },
+                {
+                  "judge": "judge-strict",
+                  "response": "The summary appears faithful but I want to flag the EBITDA adjustment for human review.",
+                  "verdict": "invalid"
+                }
+              ],
+              "output": "Harbor Textiles seeks a $2.8M term loan; trailing EBITDA of $1.9M, with a $0.4M one-time legal settlement excluded from adjusted figures.",
+              "passed": false,
+              "run": 1
+            }
+          ]
+        },
+        {
+          "expected": null,
+          "id": "fa-09",
+          "input": "Memo: Iris Robotics $5.5M facility request. Negative operating cash flow for six consecutive quarters; runway 11 months at current burn.",
+          "passed": false,
+          "runs": [
+            {
+              "detail": "unanimous: judge-lenient=fail, judge-strict=fail",
+              "judges": [
+                {
+                  "judge": "judge-lenient",
+                  "response": "fail",
+                  "verdict": "fail"
+                },
+                {
+                  "judge": "judge-strict",
+                  "response": "fail",
+                  "verdict": "fail"
+                }
+              ],
+              "output": "Iris Robotics requests a $5.5M facility. The company is approaching cash-flow breakeven and maintains a comfortable liquidity runway.",
+              "passed": false,
+              "run": 1
+            }
+          ]
+        },
+        {
+          "expected": null,
+          "id": "fa-10",
+          "input": "Memo: Juniper Freight $8.0M fleet refinance. Fleet age averages 6.2 years. DSCR 1.31x. No covenant violations to date.",
+          "passed": false,
+          "runs": [
+            {
+              "detail": "unanimous: judge-lenient=pass, judge-strict=fail",
+              "judges": [
+                {
+                  "judge": "judge-lenient",
+                  "response": "pass",
+                  "verdict": "pass"
+                },
+                {
+                  "judge": "judge-strict",
+                  "response": "fail",
+                  "verdict": "fail"
+                }
+              ],
+              "output": "Juniper Freight refinances its fleet with an $8.0M facility; DSCR 1.31x, clean covenant history, and a recently modernized fleet.",
+              "passed": false,
+              "run": 1
+            }
+          ]
+        }
+      ],
+      "judge_evidence": {
+        "agreement": {
+          "min_agreement": 0.85,
+          "n_agreed": 7,
+          "rate": 0.7,
+          "settledness": {
+            "ci95_high": 0.8922087325936988,
+            "ci95_low": 0.3967781474611453,
+            "ci_method": "wilson",
+            "pass_rate": 0.7,
+            "threshold": 0.85,
+            "verdict": "FAIL (point)"
+          }
+        },
+        "decision": "unanimous",
+        "invalid_by_judge": {
+          "judge-lenient": 0,
+          "judge-strict": 1
+        },
+        "judge_dependent": true,
+        "judges": [
+          {
+            "model_id": "mock-judge-a",
+            "name": "judge-lenient",
+            "type": "mock"
+          },
+          {
+            "model_id": "mock-judge-b",
+            "name": "judge-strict",
+            "type": "mock"
+          }
+        ],
+        "n_invalid_responses": 1,
+        "n_items": 10,
+        "n_judges": 2,
+        "pairwise": [
+          {
+            "judge_a": "judge-lenient",
+            "judge_b": "judge-strict",
+            "kappa": 0.4,
+            "n_pairs": 9,
+            "observed_agreement": 0.7777777777777778
+          }
+        ],
+        "per_judge": [
+          {
+            "n_passed": 9,
+            "name": "judge-lenient",
+            "pass_rate": 0.9,
+            "verdict": "PASS (point)"
+          },
+          {
+            "n_passed": 6,
+            "name": "judge-strict",
+            "pass_rate": 0.6,
+            "verdict": "FAIL (point)"
+          }
+        ],
+        "rubric": "The summary is faithful to the source memo: every factual claim it makes (figures, names, covenant terms, risk flags) appears in the memo. Omissions are acceptable; additions and contradictions are not."
+      },
+      "metric": "judge",
+      "metric_options": {},
+      "n_items": 10,
+      "n_passed": 6,
+      "pass_rate": 0.6,
+      "requirement_ids": [],
+      "runs_per_item": 1,
+      "sample_size_certificate": {
+        "achieved_power": 0.8111100874281417,
+        "additional_items": 63,
+        "n_current": 10,
+        "n_required": 73,
+        "planning_rate": 0.6,
+        "requested_power": 0.8,
+        "status": "ok",
+        "target_verdict": "FAIL"
+      },
+      "suite": "summary_faithfulness",
+      "threshold": 0.75,
+      "verdict": "FAIL (point)"
+    }
+  ],
+  "summary": {
+    "suites_passed": 0,
+    "total_items": 10,
+    "total_passed": 6,
+    "total_suites": 1
+  }
+}

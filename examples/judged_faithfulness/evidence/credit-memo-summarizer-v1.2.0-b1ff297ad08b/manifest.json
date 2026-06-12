@@ -1,0 +1,27 @@
+{
+  "baseline_pack": null,
+  "config_sha256": "d5faf97de848dc0c444a326ea2ea3e637d243661772fa74a932e27908aa18050",
+  "created_utc": "2026-06-12T00:40:04+00:00",
+  "dataset_sha256": {
+    "dataset_faithfulness.jsonl": "49bc582bb188874059ad29120c90d24c2c9bbda5dec882280bf9af97ea51d0a9"
+  },
+  "evidentry_version": "0.3.0",
+  "files": {
+    "report.md": "d52db76f365779a4f311c9900268504094faa4d9a11569e9776b6e79cf85bc9a",
+    "results.json": "2015fe0df44248ffeeb72882e8b58a41a388707f3c8c3b089e298388b0a34b03"
+  },
+  "model": {
+    "description": "",
+    "limitations": [
+      "Faithfulness verdicts are LLM-judge measurements, not ground truth; judge disagreement is reported as evidence."
+    ],
+    "materiality_tier": 2,
+    "name": "credit-memo-summarizer",
+    "owner": "Commercial Lending Technology, validated by Model Risk Management",
+    "tier_rationale": "Tier 2: the model informs but does not decide credit outcomes; every output passes human review before reaching credit committee.\n",
+    "use_case": "Summarizes commercial credit memos into a one-page brief for loan officers. This example validates faithfulness: the summary must not assert anything the memo does not say.\n",
+    "vendor": "internal",
+    "version": "1.2.0"
+  },
+  "pack_id": "b1ff297ad08bc217dd0cd3dad3e2c7719ecf2956c82a5f30e8ff885a0508fad7"
+}
