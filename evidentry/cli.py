@@ -10,6 +10,7 @@ from pathlib import Path
 from . import __version__
 from .config import ConfigError, load_config
 from .evidence import build_pack, compare_packs, verify_pack
+from .ingest import INGESTERS, IngestError, write_ingested
 from .runner import run_all
 
 INIT_CONFIG = """\
@@ -146,6 +147,44 @@ def cmd_diff(args: argparse.Namespace) -> int:
     return 2 if any_drift else 0
 
 
+def cmd_ingest(args: argparse.Namespace) -> int:
+    ingester = INGESTERS[args.format]
+    kwargs = {}
+    if args.format == "promptfoo":
+        kwargs["prompt_idx"] = args.prompt_idx
+    try:
+        dataset, outputs, info = ingester(Path(args.file), **kwargs)
+        dataset_path, outputs_path = write_ingested(
+            dataset, outputs, Path(args.out_dir), force=args.force
+        )
+    except (IngestError, FileNotFoundError, json.JSONDecodeError) as exc:
+        print(f"Ingest error: {exc}", file=sys.stderr)
+        return 1
+    print(f"Ingested {info['n_items']} item(s) from {args.file} ({info['source']})")
+    print(f"  dataset: {dataset_path}")
+    print(f"  outputs: {outputs_path}")
+    if info["skipped_errored"]:
+        ids = ", ".join(info["skipped_errored"][:5])
+        more = "…" if len(info["skipped_errored"]) > 5 else ""
+        print(
+            f"  SKIPPED {len(info['skipped_errored'])} errored item(s) with no "
+            f"model output ({ids}{more}) — an empty output scored as failure "
+            "would be manufactured evidence"
+        )
+    for note in info["notes"]:
+        print(f"  note: {note}")
+    print("Next: point a suite at these files in evidentry.yaml:")
+    print("  provider:")
+    print("    type: external")
+    print(f"    results_file: {outputs_path.name}")
+    print("  suites:")
+    print("    - name: ingested")
+    print(f"      dataset: {dataset_path.name}")
+    print("      metric: contains   # choose a metric; set expected per item")
+    print("      threshold: 0.90")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="evidentry",
@@ -174,6 +213,25 @@ def main(argv: list[str] | None = None) -> int:
     p_diff.add_argument("baseline", help="Baseline pack directory")
     p_diff.add_argument("current", help="Current pack directory")
     p_diff.set_defaults(func=cmd_diff)
+
+    p_ingest = sub.add_parser(
+        "ingest",
+        help="Convert another eval tool's output file into external-ingestion JSONL",
+        description=(
+            "Extracts each item's id, input, and raw model output; evidentry "
+            "re-scores the outputs with its own metrics (the source tool's "
+            "scores and assertions are not imported)."
+        ),
+    )
+    p_ingest.add_argument("format", choices=sorted(INGESTERS))
+    p_ingest.add_argument("file", help="Source file (promptfoo results.json | Inspect JSON log)")
+    p_ingest.add_argument("-o", "--out-dir", default=".", help="Directory for dataset.jsonl + outputs.jsonl")
+    p_ingest.add_argument(
+        "--prompt-idx", type=int, default=None,
+        help="promptfoo only: which prompt's results to ingest when a run compares several",
+    )
+    p_ingest.add_argument("--force", action="store_true", help="Overwrite existing output files")
+    p_ingest.set_defaults(func=cmd_ingest)
 
     args = parser.parse_args(argv)
     return args.func(args)

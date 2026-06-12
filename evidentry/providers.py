@@ -6,11 +6,10 @@ Four sources, one interface:
   Lets anyone run the full pipeline (and CI) with no API key or network.
 - external: ingest pre-computed outputs from a JSONL file of
   {"id": ..., "output": ...} rows — one line per dataset item. This is the
-  integration path for outputs produced by your own harness. There are no
-  format adapters for specific eval frameworks (DeepEval, Inspect,
-  promptfoo) yet: you must export to this JSONL yourself, and evidentry
-  re-scores the raw outputs with its own metrics — it does not consume
-  another tool's scores or judgments.
+  integration path for outputs produced by your own harness.
+  `evidentry ingest promptfoo|inspect <file>` converts those tools' output
+  files into this format (raw outputs only); evidentry re-scores them with
+  its own metrics — it does not consume another tool's scores or judgments.
 - anthropic / openai: thin live adapters over stdlib urllib for teams that
   want evidentry to drive the eval run itself.
 """

@@ -16,7 +16,7 @@ evals in  ──►  evidentry  ──►  versioned evidence pack out
 ```
 
 - **Define** a model card and acceptance thresholds in YAML.
-- **Run** evals against Anthropic / OpenAI-compatible APIs — or **ingest** pre-computed outputs from your own harness as a one-line-per-item JSONL (`provider: external`). evidentry is an evidence layer, not another eval framework. (There are no format adapters for DeepEval/Inspect/promptfoo yet — you export the raw outputs, evidentry re-scores them; it cannot consume those tools' own scores.)
+- **Run** evals against Anthropic / OpenAI-compatible APIs — or **ingest** pre-computed outputs from your own harness as a one-line-per-item JSONL (`provider: external`). evidentry is an evidence layer, not another eval framework. `evidentry ingest promptfoo results.json` / `evidentry ingest inspect log.json` converts those tools' output files into the ingestion pair for you — extracting raw outputs only, because evidentry re-scores them with its own metrics; it never imports another tool's scores or assertions. (No DeepEval adapter yet — its export format isn't documented stably enough to pin.)
 - **Emit** a versioned evidence pack: pass rates with Wilson 95% confidence intervals, interval-aware verdicts, sample-size certificates for unsettled verdicts, exact run-over-run drift tests with multiplicity control, and an optional requirement-coverage table mapped to governance frameworks — including an explicit list of what is *not* evidenced.
 - **Verify** any pack later: `evidentry verify` recomputes every hash, catching accidental modification or corruption. (Integrity, not provenance: packs are unsigned, so this does not stop a determined forger — see roadmap.)
 
@@ -101,7 +101,7 @@ evidentry covers outcomes-analysis-style evidence for text-in/text-out systems, 
 
 - **Pack signing + trusted timestamps**, so integrity holds against tampering, not just accidents
 - **Judge self-consistency** (the same judge re-asked; a judge that always agrees with itself is not the same as a judge that's right) and intervals on κ
-- **Format adapters** for DeepEval / Inspect / promptfoo output files, so `external` ingestion doesn't require hand-exported JSONL
+- **DeepEval format adapter** (promptfoo and Inspect shipped via `evidentry ingest`; DeepEval needs a stably documented export format to pin against)
 - Agent-trace evidence (multi-turn, tool calls)
 - CI integration: fail the build when a high-tier model's evidence pack regresses
 - More mappings (NIST AI RMF, ISO/IEC 42001)
