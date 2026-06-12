@@ -85,6 +85,25 @@ The worked example in [`examples/judged_faithfulness/`](examples/judged_faithful
 
 Two deterministic metrics deserve their caveats in the open. `numeric` refuses to guess: if an output contains more than one number, the item *fails with an explanation* unless you set an explicit extraction rule (`first` / `last` / `any`) — a silent wrong guess feeding a confidence interval is exactly the failure an evidence tool exists to prevent. `refusal` is a transparent lexical heuristic (the patterns are ~10 lines of `metrics.py`); it distinguishes "I can't make credit decisions" from "I can't believe this stock", but it is not a semantic classifier — audit the item-level details when a use-limit verdict matters.
 
+## CI integration
+
+`evidentry run` is built to gate builds. Exit codes: **0** all suites at or above threshold, **2** a suite's verdict is FAIL / FAIL (point), **3** thresholds held but `--fail-on-drift` found a significant regression vs the baseline pack (Holm-adjusted across suites, so monitoring many suites doesn't fail builds at an inflated family-wise rate). A minimal GitHub Actions job:
+
+```yaml
+- name: Eval evidence gate
+  run: |
+    pip install evidentry
+    evidentry run -c evidentry.yaml --baseline evidence/approved-baseline --fail-on-drift
+- name: Upload evidence pack
+  if: always()
+  uses: actions/upload-artifact@v4
+  with:
+    name: evidence-pack
+    path: evidence/
+```
+
+Commit an approved pack as the baseline (drift rows are only computed when dataset bytes, metric, and runs-per-item match — anything else is `NOT COMPARABLE`, not a p-value), and upload the fresh pack as an artifact so every build leaves auditable evidence whether it passed or not.
+
 ## Framework mappings — read this before using them
 
 Packs can include requirement-coverage tables for **SR 26-2** (US interagency model risk guidance, April 2026) and **EU AI Act Annex IV**. Three facts you should know, from the primary sources:
@@ -103,7 +122,6 @@ evidentry covers outcomes-analysis-style evidence for text-in/text-out systems, 
 - **Judge self-consistency** (the same judge re-asked; a judge that always agrees with itself is not the same as a judge that's right) and intervals on κ
 - **DeepEval format adapter** (promptfoo and Inspect shipped via `evidentry ingest`; DeepEval needs a stably documented export format to pin against)
 - Agent-trace evidence (multi-turn, tool calls)
-- CI integration: fail the build when a high-tier model's evidence pack regresses
 - More mappings (NIST AI RMF, ISO/IEC 42001)
 
 ## Authors

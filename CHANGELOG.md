@@ -64,6 +64,13 @@ because a judge's verdict is a measurement, not ground truth.
   any-of. No DeepEval adapter: its export format isn't documented stably
   enough to pin against.
 
+- **CI gating**: `evidentry run --baseline <pack> --fail-on-drift` exits 3
+  when any suite shows significant drift vs the baseline (Holm-adjusted,
+  so monitoring many suites doesn't fail builds at an inflated family-wise
+  rate). Documented exit codes (0 pass / 2 threshold failure / 3 drift /
+  1 usage error) and a GitHub Actions recipe in the README. Threshold
+  failure outranks drift in the exit code.
+
 ### Honest limits (stated in README and report)
 - Judge *self*-consistency is not yet modeled: judge suites are restricted
   to `runs: 1` rather than treating correlated judging events as
@@ -72,7 +79,7 @@ because a judge's verdict is a measurement, not ground truth.
   but flagged in bold as producing no disagreement evidence.
 
 ### Tests
-- 84 → 145 unit tests, including a hand-computed κ pin, end-to-end
+- 84 → 150 unit tests, including a hand-computed κ pin, end-to-end
   judge-run regressions, the mid-p hand value (5/5 vs 2/5 → exactly 1/12),
   Clopper-Pearson's defining tail identities and an exact-coverage check,
   strict-mode/mid-p config plumbing end-to-end, and ingest fixtures pinned
