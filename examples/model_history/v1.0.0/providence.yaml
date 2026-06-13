@@ -1,7 +1,7 @@
-# Worked example — model history series, version 1.2.0 of 1.3.0.
+# Worked example — model history series, version 1.0.0 of 1.3.0.
 #
 # ONE model (credit-memo-summarizer) validated across four releases. The
-# datasets are held FIXED across versions (identical bytes, so evidentry's
+# datasets are held FIXED across versions (identical bytes, so providence's
 # drift test treats the suites as comparable); only the model's outputs
 # change from release to release, supplied per-version via `provider:
 # external` (outputs.jsonl). This is what makes the version timeline a real
@@ -11,7 +11,7 @@
 
 model:
   name: credit-memo-summarizer
-  version: "1.2.0"
+  version: "1.0.0"
   vendor: internal
   use_case: >
     Summarizes commercial credit memos (3-15 pages) into a one-page brief for
@@ -32,7 +32,7 @@ model:
 
 provider:
   type: external
-  model_id: bank-internal-llm-v1.2
+  model_id: bank-internal-llm-v1.0
   results_file: outputs.jsonl
 
 suites:

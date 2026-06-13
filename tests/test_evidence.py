@@ -4,9 +4,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from evidentry.config import load_config
-from evidentry.evidence import build_pack, compare_packs, verify_pack
-from evidentry.runner import run_all
+from providence.config import load_config
+from providence.evidence import build_pack, compare_packs, verify_pack
+from providence.runner import run_all
 
 EXAMPLE = Path(__file__).parent.parent / "examples" / "credit_memo_summarizer"
 
@@ -18,7 +18,7 @@ class TestEvidencePack(unittest.TestCase):
         for f in EXAMPLE.iterdir():
             if f.is_file():
                 shutil.copy(f, self.tmp / f.name)
-        self.config = load_config(self.tmp / "evidentry.yaml")
+        self.config = load_config(self.tmp / "providence.yaml")
         self.results = run_all(self.config)
 
     def test_build_and_verify_roundtrip(self):

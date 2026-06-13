@@ -1,4 +1,4 @@
-"""Load and validate an evidentry.yaml configuration."""
+"""Load and validate an providence.yaml configuration."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ VALID_DRIFT_TESTS = {"fisher_exact", "fisher_midp"}
 
 
 class ConfigError(ValueError):
-    """Raised when an evidentry.yaml is missing or invalid."""
+    """Raised when an providence.yaml is missing or invalid."""
 
 
 @dataclass

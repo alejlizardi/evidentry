@@ -3,8 +3,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from evidentry.config import load_config
-from evidentry.runner import load_dataset, run_all
+from providence.config import load_config
+from providence.runner import load_dataset, run_all
 
 CONFIG = """\
 model:
@@ -35,11 +35,11 @@ DATA = (
 class TestRunner(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
-        (self.tmp / "evidentry.yaml").write_text(CONFIG, encoding="utf-8")
+        (self.tmp / "providence.yaml").write_text(CONFIG, encoding="utf-8")
         (self.tmp / "data.jsonl").write_text(DATA, encoding="utf-8")
 
     def test_run_all_shapes_and_counts(self):
-        results = run_all(load_config(self.tmp / "evidentry.yaml"))
+        results = run_all(load_config(self.tmp / "providence.yaml"))
         self.assertEqual(results["summary"]["total_items"], 2)
         suite = results["suites"][0]
         self.assertEqual(suite["n_passed"], 1)  # item 2 fails: 'no' not in 'yes'
@@ -56,8 +56,8 @@ class TestRunner(unittest.TestCase):
             "provider:\n  type: mock",
             "provider:\n  type: external\n  results_file: outputs.jsonl",
         )
-        (self.tmp / "evidentry.yaml").write_text(cfg_text, encoding="utf-8")
-        results = run_all(load_config(self.tmp / "evidentry.yaml"))
+        (self.tmp / "providence.yaml").write_text(cfg_text, encoding="utf-8")
+        results = run_all(load_config(self.tmp / "providence.yaml"))
         self.assertEqual(results["suites"][0]["n_passed"], 2)
         self.assertEqual(results["provider"]["type"], "external")
 
@@ -77,8 +77,8 @@ class TestRunner(unittest.TestCase):
         # With runs: 2 and a deterministic mock, results are stable; the
         # structure should reflect both runs.
         cfg_text = CONFIG.replace("threshold: 0.5", "threshold: 0.5\n    runs: 2")
-        (self.tmp / "evidentry.yaml").write_text(cfg_text, encoding="utf-8")
-        results = run_all(load_config(self.tmp / "evidentry.yaml"))
+        (self.tmp / "providence.yaml").write_text(cfg_text, encoding="utf-8")
+        results = run_all(load_config(self.tmp / "providence.yaml"))
         item = results["suites"][0]["items"][0]
         self.assertEqual(len(item["runs"]), 2)
         self.assertTrue(item["passed"])

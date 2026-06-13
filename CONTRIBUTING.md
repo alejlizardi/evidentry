@@ -8,8 +8,8 @@ asked for it.
 ## Dev setup
 
 ```bash
-git clone https://github.com/alejlizardi/evidentry
-cd evidentry
+git clone https://github.com/alejlizardi/providence
+cd providence
 pip install -e .
 python -m unittest discover -s tests
 ```
@@ -40,5 +40,5 @@ No dependencies beyond `pyyaml`; the statistics are pure stdlib on purpose
 ## Tests
 
 `python -m unittest discover -s tests` must pass on Linux and Windows,
-Python 3.10+. If you change anything under `evidentry/stats.py`, expect to
+Python 3.10+. If you change anything under `providence/stats.py`, expect to
 add known-value tests, not just behavioral ones.

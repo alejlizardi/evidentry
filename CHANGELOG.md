@@ -49,11 +49,11 @@ because a judge's verdict is a measurement, not ground truth.
     plain Fisher remains the default. The report's drift section explains
     whichever test produced its p-values.
 
-- **`evidentry ingest promptfoo|inspect <file>`**: format adapters that
+- **`providence ingest promptfoo|inspect <file>`**: format adapters that
   convert a promptfoo version-3 results JSON or an Inspect AI JSON log
   (`inspect log dump` for `.eval` binaries) into the external-ingestion
   pair (`dataset.jsonl` + `outputs.jsonl`). Adapters extract id, input,
-  and the raw model output only — evidentry re-scores with its own
+  and the raw model output only — providence re-scores with its own
   metrics; the source tool's assertions and scores are never imported.
   Honesty rules built in: errored items (no model output) are skipped and
   counted out loud; multi-prompt promptfoo runs require an explicit
@@ -64,7 +64,7 @@ because a judge's verdict is a measurement, not ground truth.
   any-of. No DeepEval adapter: its export format isn't documented stably
   enough to pin against.
 
-- **CI gating**: `evidentry run --baseline <pack> --fail-on-drift` exits 3
+- **CI gating**: `providence run --baseline <pack> --fail-on-drift` exits 3
   when any suite shows significant drift vs the baseline (Holm-adjusted,
   so monitoring many suites doesn't fail builds at an inflated family-wise
   rate). Documented exit codes (0 pass / 2 threshold failure / 3 drift /

@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from evidentry.config import ConfigError, load_config
+from providence.config import ConfigError, load_config
 
 VALID = """\
 model:
@@ -27,7 +27,7 @@ report:
 class TestConfig(unittest.TestCase):
     def _write(self, text: str) -> Path:
         tmp = Path(tempfile.mkdtemp())
-        path = tmp / "evidentry.yaml"
+        path = tmp / "providence.yaml"
         path.write_text(text, encoding="utf-8")
         return path
 

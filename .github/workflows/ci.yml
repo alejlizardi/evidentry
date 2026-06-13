@@ -45,20 +45,20 @@ jobs:
         shell: bash
         run: |
           for pack in examples/*/evidence/*/; do
-            evidentry verify "$pack"
+            providence verify "$pack"
           done
       - name: Re-run every example and verify the regenerated packs
         shell: bash
         run: |
-          for cfg in examples/*/evidentry.yaml; do
+          for cfg in examples/*/providence.yaml; do
             (
               cd "$(dirname "$cfg")"
               # Exit 2 = "a suite failed its threshold", which the examples
               # do on purpose; any other nonzero exit is a real failure.
-              evidentry run -c evidentry.yaml && rc=0 || rc=$?
+              providence run -c providence.yaml && rc=0 || rc=$?
               if [ "$rc" != "0" ] && [ "$rc" != "2" ]; then exit "$rc"; fi
               for pack in evidence/*/; do
-                evidentry verify "$pack"
+                providence verify "$pack"
               done
             ) || exit 1
           done

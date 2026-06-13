@@ -1,4 +1,4 @@
-"""evidentry — turn LLM eval runs into auditable evidence packs with defensible statistics.
+"""providence — turn LLM eval runs into auditable evidence packs with defensible statistics.
 
 Define a model card and eval suites in YAML, run them (or ingest results
 from your own harness), and emit a versioned, hash-pinned evidence pack:

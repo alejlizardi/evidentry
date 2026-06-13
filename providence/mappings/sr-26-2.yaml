@@ -26,7 +26,7 @@
 # been signaled). It is an interpretation, not the guidance text, and not
 # legal or regulatory advice. Validate with compliance counsel.
 #
-# satisfied_by values are artifact kinds evidentry can produce:
+# satisfied_by values are artifact kinds providence can produce:
 #   model_card, tier_rationale, limitations, suite_results, dataset_hashes,
 #   manifest, drift_comparison, manual (= always reported as a gap for the
 #   institution to evidence outside this tool).

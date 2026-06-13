@@ -3,8 +3,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from evidentry.cli import main as cli_main
-from evidentry.ingest import (
+from providence.cli import main as cli_main
+from providence.ingest import (
     IngestError,
     ingest_inspect,
     ingest_promptfoo,
@@ -237,8 +237,8 @@ report:
             for line in (self.tmp / "outputs.jsonl").read_text(encoding="utf-8").splitlines()
         ]
         self.assertEqual({r["id"] for r in outputs_rows} >= {r["id"] for r in kept}, True)
-        (self.tmp / "evidentry.yaml").write_text(config, encoding="utf-8")
-        rc = cli_main(["run", "-c", str(self.tmp / "evidentry.yaml")])
+        (self.tmp / "providence.yaml").write_text(config, encoding="utf-8")
+        rc = cli_main(["run", "-c", str(self.tmp / "providence.yaml")])
         self.assertIn(rc, (0, 2))
         packs = list((self.tmp / "evidence").iterdir())
         self.assertEqual(len(packs), 1)
