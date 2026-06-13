@@ -9,7 +9,7 @@ from pathlib import Path
 
 from . import __version__
 from .config import ConfigError, load_config
-from .evidence import build_pack, compare_packs, verify_pack
+from .evidence import build_pack, compare_packs, export_series, verify_pack
 from .ingest import INGESTERS, IngestError, write_ingested
 from .runner import run_all
 
@@ -168,6 +168,27 @@ def cmd_diff(args: argparse.Namespace) -> int:
     return 2 if any_drift else 0
 
 
+def cmd_export(args: argparse.Namespace) -> int:
+    pack_dirs = [Path(p) for p in args.packs]
+    for p in pack_dirs:
+        if not (p / "results.json").exists():
+            print(f"No results.json in pack: {p}", file=sys.stderr)
+            return 1
+    out_dir = Path(args.out_dir)
+    bundle = export_series(pack_dirs, out_dir)
+    print(f"Exported {len(bundle['index'])} pack(s) to {out_dir}")
+    print(f"  index.json   {len(bundle['index'])} entries")
+    print(f"  packs/       {len(bundle['index'])} files")
+    drifting = sum(
+        1 for pair in bundle["drift"] for r in pair["rows"] if r.get("significant")
+    )
+    print(
+        f"  drift.json   {len(bundle['drift'])} consecutive pair(s), "
+        f"{drifting} significant-drift row(s)"
+    )
+    return 0
+
+
 def cmd_ingest(args: argparse.Namespace) -> int:
     ingester = INGESTERS[args.format]
     kwargs = {}
@@ -252,6 +273,22 @@ def main(argv: list[str] | None = None) -> int:
     p_diff.add_argument("baseline", help="Baseline pack directory")
     p_diff.add_argument("current", help="Current pack directory")
     p_diff.set_defaults(func=cmd_diff)
+
+    p_export = sub.add_parser(
+        "export",
+        help="Export a version-ordered series of packs to frontend-ready static JSON",
+        description=(
+            "Writes index.json (one entry per pack), packs/<id>.json (each "
+            "pack's results.json verbatim), and drift.json (Fisher+Holm drift "
+            "rows for each consecutive pair) into the output directory. Pass "
+            "the packs in version order."
+        ),
+    )
+    p_export.add_argument("packs", nargs="+", help="Evidence-pack directories, in version order")
+    p_export.add_argument(
+        "-o", "--out-dir", default="site-data", help="Output directory for the static JSON"
+    )
+    p_export.set_defaults(func=cmd_export)
 
     p_ingest = sub.add_parser(
         "ingest",

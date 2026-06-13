@@ -1,0 +1,232 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/evidentry/evidentry/schema/results.schema.json",
+  "title": "evidentry results.json",
+  "description": "The render-ready payload written into every evidence pack and consumed verbatim by `evidentry export` and the dashboard. One run of one model version against its suites.",
+  "type": "object",
+  "required": ["model", "provider", "statistics", "suites", "summary", "config_sha256"],
+  "properties": {
+    "config_sha256": {
+      "type": "string",
+      "description": "SHA-256 of the canonical config; part of the pack id."
+    },
+    "model": { "$ref": "#/$defs/model" },
+    "provider": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "type": "string", "enum": ["mock", "external", "anthropic", "openai"] },
+        "model_id": { "type": "string" },
+        "results_file": { "type": "string" },
+        "base_url": { "type": "string" }
+      }
+    },
+    "statistics": {
+      "type": "object",
+      "required": ["intervals", "drift_test"],
+      "properties": {
+        "intervals": { "type": "string", "enum": ["wilson", "clopper_pearson"] },
+        "drift_test": { "type": "string", "enum": ["fisher_exact", "fisher_midp"] }
+      }
+    },
+    "suites": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/suite" }
+    },
+    "summary": {
+      "type": "object",
+      "required": ["total_suites", "suites_passed", "total_items", "total_passed"],
+      "properties": {
+        "total_suites": { "type": "integer", "minimum": 0 },
+        "suites_passed": { "type": "integer", "minimum": 0 },
+        "total_items": { "type": "integer", "minimum": 0 },
+        "total_passed": { "type": "integer", "minimum": 0 }
+      }
+    }
+  },
+  "$defs": {
+    "verdict": {
+      "type": "string",
+      "description": "PASS = even the CI lower bound clears the threshold (settled). PASS (point) = the point estimate clears it but the interval does not (too small to settle). FAIL / FAIL (point) mirror these below the threshold.",
+      "enum": ["PASS", "PASS (point)", "FAIL", "FAIL (point)"]
+    },
+    "model": {
+      "type": "object",
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string" },
+        "vendor": { "type": "string" },
+        "use_case": { "type": "string" },
+        "owner": { "type": "string" },
+        "description": { "type": "string" },
+        "materiality_tier": { "type": "integer" },
+        "tier_rationale": { "type": "string" },
+        "limitations": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "sample_size_certificate": {
+      "type": "object",
+      "description": "How many items would settle an unsettled verdict (exact binomial). Present only on (point) verdicts.",
+      "required": ["status", "target_verdict", "planning_rate", "requested_power", "n_current"],
+      "properties": {
+        "status": { "type": "string", "enum": ["ok", "already_settled", "unreachable"] },
+        "target_verdict": { "type": "string", "enum": ["PASS", "FAIL"] },
+        "planning_rate": { "type": "number" },
+        "requested_power": { "type": "number" },
+        "n_current": { "type": "integer" },
+        "n_required": { "type": "integer" },
+        "additional_items": { "type": "integer" },
+        "achieved_power": { "type": "number" },
+        "note": { "type": "string" },
+        "approximate_under_clustering": { "type": "boolean" }
+      }
+    },
+    "run": {
+      "type": "object",
+      "required": ["run", "output", "passed", "detail"],
+      "properties": {
+        "run": { "type": "integer", "minimum": 1 },
+        "output": { "type": "string" },
+        "passed": { "type": "boolean" },
+        "detail": { "type": "string" },
+        "judges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["judge", "verdict", "response"],
+            "properties": {
+              "judge": { "type": "string" },
+              "verdict": { "type": "string" },
+              "response": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "item": {
+      "type": "object",
+      "required": ["id", "input", "passed", "runs"],
+      "properties": {
+        "id": { "type": "string" },
+        "input": { "type": "string" },
+        "expected": {},
+        "passed": { "type": "boolean" },
+        "cluster": { "type": "string" },
+        "runs": { "type": "array", "items": { "$ref": "#/$defs/run" } }
+      }
+    },
+    "suite": {
+      "type": "object",
+      "required": [
+        "suite", "metric", "dataset", "dataset_sha256", "n_items", "n_passed",
+        "pass_rate", "threshold", "verdict", "ci95_low", "ci95_high", "ci_method",
+        "runs_per_item", "items"
+      ],
+      "properties": {
+        "suite": { "type": "string" },
+        "description": { "type": "string" },
+        "metric": {
+          "type": "string",
+          "enum": ["exact_match", "contains", "regex", "numeric", "refusal", "judge"]
+        },
+        "metric_options": { "type": "object" },
+        "runs_per_item": { "type": "integer", "minimum": 1 },
+        "requirement_ids": { "type": "array", "items": { "type": "string" } },
+        "dataset": { "type": "string" },
+        "dataset_sha256": { "type": "string" },
+        "n_items": { "type": "integer", "minimum": 0 },
+        "n_passed": { "type": "integer", "minimum": 0 },
+        "pass_rate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "threshold": { "type": "number", "minimum": 0, "maximum": 1 },
+        "verdict": { "$ref": "#/$defs/verdict" },
+        "ci95_low": { "type": "number", "minimum": 0, "maximum": 1 },
+        "ci95_high": { "type": "number", "minimum": 0, "maximum": 1 },
+        "ci_method": {
+          "type": "string",
+          "enum": ["wilson", "clopper_pearson", "wilson_cluster_adjusted"]
+        },
+        "sample_size_certificate": { "$ref": "#/$defs/sample_size_certificate" },
+        "n_clusters": { "type": "integer" },
+        "deff": { "type": "number" },
+        "n_eff": { "type": "number" },
+        "critical_value": { "type": "number" },
+        "items": { "type": "array", "items": { "$ref": "#/$defs/item" } },
+        "judge_evidence": { "$ref": "#/$defs/judge_evidence" }
+      }
+    },
+    "judge_evidence": {
+      "type": "object",
+      "description": "Present only on judge-metric suites: how much the LLM-judge panel agreed, and whether the verdict depended on which judges were asked.",
+      "properties": {
+        "decision": { "type": "string", "description": "Panel rule, e.g. unanimous | majority." },
+        "judge_dependent": {
+          "type": "boolean",
+          "description": "True when individual judges' verdicts straddle the threshold, so the panel verdict depends on which judges were asked."
+        },
+        "n_judges": { "type": "integer" },
+        "n_items": { "type": "integer" },
+        "n_invalid_responses": { "type": "integer" },
+        "invalid_by_judge": { "type": "object", "additionalProperties": { "type": "integer" } },
+        "rubric": { "type": "string" },
+        "agreement": {
+          "type": "object",
+          "description": "Panel agreement, treated as evidence in its own right: rate of items the panel agreed on, with a settledness verdict on that rate.",
+          "properties": {
+            "rate": { "type": "number" },
+            "n_agreed": { "type": "integer" },
+            "min_agreement": { "type": "number" },
+            "settledness": {
+              "type": "object",
+              "properties": {
+                "pass_rate": { "type": "number" },
+                "threshold": { "type": "number" },
+                "verdict": { "$ref": "#/$defs/verdict" },
+                "ci95_low": { "type": "number" },
+                "ci95_high": { "type": "number" },
+                "ci_method": { "type": "string" }
+              }
+            }
+          }
+        },
+        "judges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "type": { "type": "string" },
+              "model_id": { "type": "string" }
+            }
+          }
+        },
+        "pairwise": {
+          "type": "array",
+          "description": "Chance-corrected agreement (Cohen's kappa) for each judge pair.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "judge_a": { "type": "string" },
+              "judge_b": { "type": "string" },
+              "kappa": { "type": ["number", "null"] },
+              "observed_agreement": { "type": ["number", "null"] },
+              "n_pairs": { "type": "integer" }
+            }
+          }
+        },
+        "per_judge": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "n_passed": { "type": "integer" },
+              "pass_rate": { "type": "number" },
+              "verdict": { "$ref": "#/$defs/verdict" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

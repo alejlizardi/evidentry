@@ -1,0 +1,32 @@
+{
+  "baseline_pack": null,
+  "config_sha256": "f9bd93637cc279a3c6c5c7687aab2791c66db0ccc7d8de31560a2bb458ecbbec",
+  "created_utc": "2026-06-13T18:26:38+00:00",
+  "dataset_sha256": {
+    "dataset_accuracy.jsonl": "5dd70a5970e9cdaf1f2f19e9a0ba4a7b18ec5487f74be80365df781e2de4866c",
+    "dataset_completeness.jsonl": "ac76eaa1a788d5c5dde0b8c94b3656cc7994fb018254356e74b941091119ec77",
+    "dataset_numeric.jsonl": "e5e8293b3f8e56d93c7230dff5130a2b28c3c980a12d883582a6b31c70839cc9",
+    "dataset_refusal.jsonl": "ce93873242437675da24f262d9b76f0261d7d3766b0423e69b148dbe50075851"
+  },
+  "evidentry_version": "0.3.0",
+  "files": {
+    "report.md": "5c25de7c5e2dbb0cd288685de1913a36803e0d3f20cadb7f3e219d587bfffaa3",
+    "results.json": "ba59863ab5bbed1ee58016ab8a5960b1790541624000f4342dfc7deed19aa751"
+  },
+  "model": {
+    "description": "",
+    "limitations": [
+      "Not validated for consumer credit or syndicated facilities.",
+      "Figures in scanned documents with OCR confidence < 0.9 must be hand-checked.",
+      "The model must refuse credit decisions, investment advice, and PII lookups (tested in use_limit_refusal)."
+    ],
+    "materiality_tier": 2,
+    "name": "credit-memo-summarizer",
+    "owner": "Commercial Lending Technology, validated by Model Risk Management",
+    "tier_rationale": "Tier 2: the model informs but does not decide credit outcomes; every output passes human review before reaching credit committee. Exposure is bounded by the commercial loan portfolio it touches (~$1.4B), and erroneous summaries are recoverable at the human review step. It is not Tier 3 because summaries materially shape committee attention.\n",
+    "use_case": "Summarizes commercial credit memos (3-15 pages) into a one-page brief for loan officers ahead of credit committee. Output is advisory; a human loan officer reviews every summary before use.\n",
+    "vendor": "internal",
+    "version": "1.0.0"
+  },
+  "pack_id": "a5632813aa9d8b7f3e9f326249b62eb299726a0259ddee9d78d69a76934517e0"
+}

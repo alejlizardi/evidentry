@@ -27,6 +27,12 @@ classifiers = [
 ]
 dependencies = ["pyyaml>=6.0"]
 
+[project.optional-dependencies]
+# Dev-only: validating results.json against schema/results.schema.json. The
+# library and its core tests stay pure-stdlib (plus pyyaml); the schema test
+# skips when jsonschema is absent.
+dev = ["jsonschema>=4.0"]
+
 [project.scripts]
 evidentry = "evidentry.cli:main"
 
