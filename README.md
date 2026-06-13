@@ -19,6 +19,9 @@ evals in  ──►  evidentry  ──►  versioned evidence pack out
 - **Run** evals against Anthropic / OpenAI-compatible APIs — or **ingest** pre-computed outputs from your own harness as a one-line-per-item JSONL (`provider: external`). evidentry is an evidence layer, not another eval framework. `evidentry ingest promptfoo results.json` / `evidentry ingest inspect log.json` converts those tools' output files into the ingestion pair for you — extracting raw outputs only, because evidentry re-scores them with its own metrics; it never imports another tool's scores or assertions. (No DeepEval adapter yet — its export format isn't documented stably enough to pin.)
 - **Emit** a versioned evidence pack: pass rates with Wilson 95% confidence intervals, interval-aware verdicts, sample-size certificates for unsettled verdicts, exact run-over-run drift tests with multiplicity control, and an optional requirement-coverage table mapped to governance frameworks — including an explicit list of what is *not* evidenced.
 - **Verify** any pack later: `evidentry verify` recomputes every hash, catching accidental modification or corruption. (Integrity, not provenance: packs are unsigned, so this does not stop a determined forger — see roadmap.)
+- **Export** a version-ordered series of packs to frontend-ready static JSON with `evidentry export` — `index.json`, each pack's `results.json`, and a `drift.json` timeline (Fisher + Holm across consecutive pairs). This feeds the dashboard below.
+
+> **See it rendered:** [**evidentry-dashboard**](https://github.com/alejlizardi/evidentry-dashboard) ([live](https://alejlizardi.github.io/evidentry-dashboard/)) is a React dashboard for these packs — Wilson intervals as error bars, the settled-vs-`(point)` distinction shown visually, and the Holm-significant drift event highlighted. The statistics in [`stats.py`](evidentry/stats.py), made visible.
 
 ## The statistics are the point
 
@@ -52,7 +55,7 @@ evidentry run -c evidentry.yaml
 evidentry verify evidence/credit-memo-summarizer-v1.2.0-*
 ```
 
-The committed sample output is in [`examples/credit_memo_summarizer/evidence/`](examples/credit_memo_summarizer/evidence/) — including a **failing** numeric-extraction suite and a use-limit violation, because an evidence tool you only see passing is a demo, not evidence. A second example, [`examples/judged_faithfulness/`](examples/judged_faithfulness/), scores a graded quality with a two-judge panel that genuinely disagrees.
+The committed sample output is in [`examples/credit_memo_summarizer/evidence/`](examples/credit_memo_summarizer/evidence/) — including a **failing** numeric-extraction suite and a use-limit violation, because an evidence tool you only see passing is a demo, not evidence. A second example, [`examples/judged_faithfulness/`](examples/judged_faithfulness/), scores a graded quality with a two-judge panel that genuinely disagrees. A third, [`examples/model_history/`](examples/model_history/), tracks one model across four versions on a fixed dataset — one release trips a Holm-significant drift event — and is the series the dashboard renders.
 
 ## What a pack asserts
 
