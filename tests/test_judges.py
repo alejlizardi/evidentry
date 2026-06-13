@@ -3,8 +3,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from evidentry.config import ConfigError, JudgeConfig, JudgeSpec, load_config
-from evidentry.judges import (
+from providence.config import ConfigError, JudgeConfig, JudgeSpec, load_config
+from providence.judges import (
     ExternalJudge,
     MockJudge,
     build_judge_prompt,
@@ -12,8 +12,8 @@ from evidentry.judges import (
     judge_evidence,
     parse_verdict,
 )
-from evidentry.runner import run_all
-from evidentry.stats import cohen_kappa
+from providence.runner import run_all
+from providence.stats import cohen_kappa
 
 JUDGE_CONFIG = """\
 model:
@@ -168,11 +168,11 @@ class TestCohenKappa(unittest.TestCase):
 class TestJudgeRun(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
-        (self.tmp / "evidentry.yaml").write_text(JUDGE_CONFIG, encoding="utf-8")
+        (self.tmp / "providence.yaml").write_text(JUDGE_CONFIG, encoding="utf-8")
         (self.tmp / "data.jsonl").write_text(DATA, encoding="utf-8")
 
     def run_suite(self):
-        results = run_all(load_config(self.tmp / "evidentry.yaml"))
+        results = run_all(load_config(self.tmp / "providence.yaml"))
         return results["suites"][0]
 
     def test_unanimous_consensus_counts(self):
@@ -217,7 +217,7 @@ class TestJudgeRun(unittest.TestCase):
 
     def test_majority_rule(self):
         cfg = JUDGE_CONFIG.replace("decision: unanimous", "decision: majority")
-        (self.tmp / "evidentry.yaml").write_text(cfg, encoding="utf-8")
+        (self.tmp / "providence.yaml").write_text(cfg, encoding="utf-8")
         suite = self.run_suite()
         # 2-judge majority needs both: same counts as unanimous here
         self.assertEqual(suite["n_passed"], 6)
@@ -241,8 +241,8 @@ class TestJudgeConfigValidation(unittest.TestCase):
         (self.tmp / "data.jsonl").write_text(DATA, encoding="utf-8")
 
     def load(self, cfg_text):
-        (self.tmp / "evidentry.yaml").write_text(cfg_text, encoding="utf-8")
-        return load_config(self.tmp / "evidentry.yaml")
+        (self.tmp / "providence.yaml").write_text(cfg_text, encoding="utf-8")
+        return load_config(self.tmp / "providence.yaml")
 
     def test_judge_metric_requires_judge_block(self):
         cfg = JUDGE_CONFIG.replace("""    judge:

@@ -1,8 +1,8 @@
-"""Format adapters: convert other eval tools' output files into evidentry's
+"""Format adapters: convert other eval tools' output files into providence's
 external-ingestion pair (dataset.jsonl + outputs.jsonl).
 
 Scope, stated plainly: an adapter extracts each item's id, input, and the
-model's RAW OUTPUT TEXT. evidentry then re-scores those outputs with its
+model's RAW OUTPUT TEXT. providence then re-scores those outputs with its
 own metrics — it does not import the source tool's assertions, scores, or
 judgments, because numbers it didn't compute are numbers it can't stand
 behind. Items the source tool recorded as errored (no model output) are
@@ -115,7 +115,7 @@ def ingest_promptfoo(
         "n_items": len(dataset),
         "skipped_errored": skipped,
         "notes": [
-            "promptfoo assertions/scores were NOT imported; evidentry re-scores raw outputs",
+            "promptfoo assertions/scores were NOT imported; providence re-scores raw outputs",
             "add an 'expected' field to each dataset.jsonl row before running",
         ],
     }
@@ -165,7 +165,7 @@ def ingest_inspect(
             if len(target) == 1:
                 row["expected"] = str(target[0])
             elif target:
-                # Inspect list targets usually mean any-of; evidentry's
+                # Inspect list targets usually mean any-of; providence's
                 # `contains` requires ALL substrings. Carry the list but
                 # make the user decide.
                 row["expected"] = [str(t) for t in target]
@@ -179,7 +179,7 @@ def ingest_inspect(
         "n_items": len(dataset),
         "skipped_errored": skipped,
         "notes": [
-            "Inspect scorer results were NOT imported; evidentry re-scores raw outputs",
+            "Inspect scorer results were NOT imported; providence re-scores raw outputs",
         ],
     }
     if multi_epoch:
@@ -192,7 +192,7 @@ def ingest_inspect(
         info["notes"].append(
             f"{len(list_targets)} item(s) have list targets ({', '.join(list_targets[:5])}"
             + ("…" if len(list_targets) > 5 else "")
-            + "): Inspect list targets usually mean any-of, but evidentry's "
+            + "): Inspect list targets usually mean any-of, but providence's "
             "`contains` metric requires ALL substrings — review these before running"
         )
     return dataset, outputs, info

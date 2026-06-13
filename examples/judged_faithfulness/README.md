@@ -7,7 +7,7 @@ key:
 
 ```bash
 cd examples/judged_faithfulness
-evidentry run -c evidentry.yaml
+providence run -c providence.yaml
 ```
 
 It is built to demonstrate the failure modes a judge layer must surface

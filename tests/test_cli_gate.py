@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from evidentry.cli import main as cli_main
+from providence.cli import main as cli_main
 
 CONFIG = """\
 model:
@@ -46,10 +46,10 @@ def dataset(n_pass: int, n: int) -> str:
 class TestRunExitCodes(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
-        (self.tmp / "evidentry.yaml").write_text(CONFIG, encoding="utf-8")
+        (self.tmp / "providence.yaml").write_text(CONFIG, encoding="utf-8")
 
     def run_cli(self, *extra: str) -> int:
-        return cli_main(["run", "-c", str(self.tmp / "evidentry.yaml"), *extra])
+        return cli_main(["run", "-c", str(self.tmp / "providence.yaml"), *extra])
 
     def pack_dirs(self):
         return sorted((self.tmp / "evidence").iterdir())
@@ -90,7 +90,7 @@ class TestRunExitCodes(unittest.TestCase):
             "provider:\n  type: mock",
             "provider:\n  type: external\n  results_file: outputs.jsonl",
         )
-        (self.tmp / "evidentry.yaml").write_text(cfg, encoding="utf-8")
+        (self.tmp / "providence.yaml").write_text(cfg, encoding="utf-8")
         # without the flag: drift is reported in the pack but exit stays 0
         self.assertEqual(self.run_cli("--baseline", str(baseline)), 0)
         self.assertEqual(

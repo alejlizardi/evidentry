@@ -1,16 +1,15 @@
 {
   "baseline_pack": null,
   "config_sha256": "6a076bdaa1696ca218108a9b4e5424d5a06a783d09cbdde12cefd0d15325bdf4",
-  "created_utc": "2026-06-13T18:26:39+00:00",
+  "created_utc": "2026-06-13T19:49:07+00:00",
   "dataset_sha256": {
     "dataset_accuracy.jsonl": "5dd70a5970e9cdaf1f2f19e9a0ba4a7b18ec5487f74be80365df781e2de4866c",
     "dataset_completeness.jsonl": "ac76eaa1a788d5c5dde0b8c94b3656cc7994fb018254356e74b941091119ec77",
     "dataset_numeric.jsonl": "e5e8293b3f8e56d93c7230dff5130a2b28c3c980a12d883582a6b31c70839cc9",
     "dataset_refusal.jsonl": "ce93873242437675da24f262d9b76f0261d7d3766b0423e69b148dbe50075851"
   },
-  "evidentry_version": "0.3.0",
   "files": {
-    "report.md": "2bfcb1fbc46f7de3897168c6c9fe247255b15725bf1ed205d5e1a9872b28a9ea",
+    "report.md": "40499b0014045f4254c59d9a2c7f86391d866b37d66226e63ab4a920a64417b9",
     "results.json": "d2260fe12e0fe132f796505c60212935ac954155c291e3d3af589af572768b66"
   },
   "model": {
@@ -28,5 +27,6 @@
     "vendor": "internal",
     "version": "1.1.0"
   },
-  "pack_id": "ed8e2f330123c201ecbf7fa3fb6c79b13d90dd8dbd6bee4a81f277155e13a471"
+  "pack_id": "ed8e2f330123c201ecbf7fa3fb6c79b13d90dd8dbd6bee4a81f277155e13a471",
+  "providence_version": "0.3.0"
 }

@@ -1,27 +1,27 @@
-# evidentry
+# providence
 
-[![CI](https://github.com/alejlizardi/evidentry/actions/workflows/ci.yml/badge.svg)](https://github.com/alejlizardi/evidentry/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)
+[![CI](https://github.com/alejlizardi/providence/actions/workflows/ci.yml/badge.svg)](https://github.com/alejlizardi/providence/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)
 
 **Turn LLM eval runs into auditable evidence packs with defensible statistics.**
 
 Most eval results are reported as a bare pass rate, regenerated ad hoc, and pasted into a doc. That's fine for iteration; it's not fine the moment someone — a reviewer, a customer's risk team, an auditor, or you in six months — asks *"how do you know, and can you show your work?"*
 
-Eval frameworks measure your model. evidentry packages the measurement as evidence:
+Eval frameworks measure your model. providence packages the measurement as evidence:
 
 ```
-evals in  ──►  evidentry  ──►  versioned evidence pack out
+evals in  ──►  providence  ──►  versioned evidence pack out
                                ├─ report.md      (validation report, with stats and gap table)
                                ├─ results.json   (every item, every run)
                                └─ manifest.json  (SHA-256 of config, datasets, artifacts)
 ```
 
 - **Define** a model card and acceptance thresholds in YAML.
-- **Run** evals against Anthropic / OpenAI-compatible APIs — or **ingest** pre-computed outputs from your own harness as a one-line-per-item JSONL (`provider: external`). evidentry is an evidence layer, not another eval framework. `evidentry ingest promptfoo results.json` / `evidentry ingest inspect log.json` converts those tools' output files into the ingestion pair for you — extracting raw outputs only, because evidentry re-scores them with its own metrics; it never imports another tool's scores or assertions. (No DeepEval adapter yet — its export format isn't documented stably enough to pin.)
+- **Run** evals against Anthropic / OpenAI-compatible APIs — or **ingest** pre-computed outputs from your own harness as a one-line-per-item JSONL (`provider: external`). providence is an evidence layer, not another eval framework. `providence ingest promptfoo results.json` / `providence ingest inspect log.json` converts those tools' output files into the ingestion pair for you — extracting raw outputs only, because providence re-scores them with its own metrics; it never imports another tool's scores or assertions. (No DeepEval adapter yet — its export format isn't documented stably enough to pin.)
 - **Emit** a versioned evidence pack: pass rates with Wilson 95% confidence intervals, interval-aware verdicts, sample-size certificates for unsettled verdicts, exact run-over-run drift tests with multiplicity control, and an optional requirement-coverage table mapped to governance frameworks — including an explicit list of what is *not* evidenced.
-- **Verify** any pack later: `evidentry verify` recomputes every hash, catching accidental modification or corruption. (Integrity, not provenance: packs are unsigned, so this does not stop a determined forger — see roadmap.)
-- **Export** a version-ordered series of packs to frontend-ready static JSON with `evidentry export` — `index.json`, each pack's `results.json`, and a `drift.json` timeline (Fisher + Holm across consecutive pairs). This feeds the dashboard below.
+- **Verify** any pack later: `providence verify` recomputes every hash, catching accidental modification or corruption. (Integrity, not provenance: packs are unsigned, so this does not stop a determined forger — see roadmap.)
+- **Export** a version-ordered series of packs to frontend-ready static JSON with `providence export` — `index.json`, each pack's `results.json`, and a `drift.json` timeline (Fisher + Holm across consecutive pairs). This feeds the dashboard below.
 
-> **See it rendered:** [**evidentry-dashboard**](https://github.com/alejlizardi/evidentry-dashboard) ([live](https://alejlizardi.github.io/evidentry-dashboard/)) is a React dashboard for these packs — Wilson intervals as error bars, the settled-vs-`(point)` distinction shown visually, and the Holm-significant drift event highlighted. The statistics in [`stats.py`](evidentry/stats.py), made visible.
+> **See it rendered:** [**providence-dashboard**](https://github.com/alejlizardi/providence-dashboard) ([live](https://alejlizardi.github.io/providence-dashboard/)) is a React dashboard for these packs — Wilson intervals as error bars, the settled-vs-`(point)` distinction shown visually, and the Holm-significant drift event highlighted. The statistics in [`stats.py`](providence/stats.py), made visible.
 
 ## The statistics are the point
 
@@ -41,18 +41,18 @@ What the statistics honestly mean — and don't: the intervals quantify sampling
 ## Quickstart
 
 ```bash
-pip install evidentry
-evidentry init my-model   # scaffold config + sample dataset
+pip install providence
+providence init my-model   # scaffold config + sample dataset
 cd my-model
-evidentry run             # works out of the box with the mock provider
+providence run             # works out of the box with the mock provider
 ```
 
 Or run the worked example — a fictional bank validating a credit-memo summarizer (no API key needed; the mock provider makes it fully deterministic):
 
 ```bash
 cd examples/credit_memo_summarizer
-evidentry run -c evidentry.yaml
-evidentry verify evidence/credit-memo-summarizer-v1.2.0-*
+providence run -c providence.yaml
+providence verify evidence/credit-memo-summarizer-v1.2.0-*
 ```
 
 The committed sample output is in [`examples/credit_memo_summarizer/evidence/`](examples/credit_memo_summarizer/evidence/) — including a **failing** numeric-extraction suite and a use-limit violation, because an evidence tool you only see passing is a demo, not evidence. A second example, [`examples/judged_faithfulness/`](examples/judged_faithfulness/), scores a graded quality with a two-judge panel that genuinely disagrees. A third, [`examples/model_history/`](examples/model_history/), tracks one model across four versions on a fixed dataset — one release trips a Holm-significant drift event — and is the series the dashboard renders.
@@ -90,13 +90,13 @@ Two deterministic metrics deserve their caveats in the open. `numeric` refuses t
 
 ## CI integration
 
-`evidentry run` is built to gate builds. Exit codes: **0** all suites at or above threshold, **2** a suite's verdict is FAIL / FAIL (point), **3** thresholds held but `--fail-on-drift` found a significant regression vs the baseline pack (Holm-adjusted across suites, so monitoring many suites doesn't fail builds at an inflated family-wise rate). A minimal GitHub Actions job:
+`providence run` is built to gate builds. Exit codes: **0** all suites at or above threshold, **2** a suite's verdict is FAIL / FAIL (point), **3** thresholds held but `--fail-on-drift` found a significant regression vs the baseline pack (Holm-adjusted across suites, so monitoring many suites doesn't fail builds at an inflated family-wise rate). A minimal GitHub Actions job:
 
 ```yaml
 - name: Eval evidence gate
   run: |
-    pip install evidentry
-    evidentry run -c evidentry.yaml --baseline evidence/approved-baseline --fail-on-drift
+    pip install providence
+    providence run -c providence.yaml --baseline evidence/approved-baseline --fail-on-drift
 - name: Upload evidence pack
   if: always()
   uses: actions/upload-artifact@v4
@@ -117,13 +117,13 @@ Packs can include requirement-coverage tables for **SR 26-2** (US interagency mo
 
 ## Scope, honestly
 
-evidentry covers outcomes-analysis-style evidence for text-in/text-out systems, scored by deterministic metrics or LLM-judge panels with disagreement reporting. Not yet covered: fairness testing, multi-turn agent traces, tool-call audit, pack signing, judge self-consistency modeling.
+providence covers outcomes-analysis-style evidence for text-in/text-out systems, scored by deterministic metrics or LLM-judge panels with disagreement reporting. Not yet covered: fairness testing, multi-turn agent traces, tool-call audit, pack signing, judge self-consistency modeling.
 
 ## Roadmap
 
 - **Pack signing + trusted timestamps**, so integrity holds against tampering, not just accidents
 - **Judge self-consistency** (the same judge re-asked; a judge that always agrees with itself is not the same as a judge that's right) and intervals on κ
-- **DeepEval format adapter** (promptfoo and Inspect shipped via `evidentry ingest`; DeepEval needs a stably documented export format to pin against)
+- **DeepEval format adapter** (promptfoo and Inspect shipped via `providence ingest`; DeepEval needs a stably documented export format to pin against)
 - Agent-trace evidence (multi-turn, tool calls)
 - More mappings (NIST AI RMF, ISO/IEC 42001)
 

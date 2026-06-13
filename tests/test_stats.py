@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from evidentry.stats import (
+from providence.stats import (
     cluster_diagnostics,
     drift_test,
     fisher_exact_pvalue,

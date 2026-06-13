@@ -3,9 +3,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from evidentry.config import load_config
-from evidentry.report import gap_analysis, load_mapping, render_markdown
-from evidentry.runner import run_all
+from providence.config import load_config
+from providence.report import gap_analysis, load_mapping, render_markdown
+from providence.runner import run_all
 
 EXAMPLE = Path(__file__).parent.parent / "examples" / "credit_memo_summarizer"
 
@@ -17,7 +17,7 @@ class TestReport(unittest.TestCase):
         for f in EXAMPLE.iterdir():
             if f.is_file():
                 shutil.copy(f, cls.tmp / f.name)
-        cls.config = load_config(cls.tmp / "evidentry.yaml")
+        cls.config = load_config(cls.tmp / "providence.yaml")
         cls.results = run_all(cls.config)
 
     def test_mappings_load(self):

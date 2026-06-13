@@ -231,7 +231,7 @@ def build_pack(
 
     manifest: dict[str, Any] = {
         "pack_id": pack_id,
-        "evidentry_version": __version__,
+        "providence_version": __version__,
         "created_utc": _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds"),
         "model": model,
         "config_sha256": results["config_sha256"],

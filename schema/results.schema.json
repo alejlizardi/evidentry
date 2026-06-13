@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/evidentry/evidentry/schema/results.schema.json",
-  "title": "evidentry results.json",
-  "description": "The render-ready payload written into every evidence pack and consumed verbatim by `evidentry export` and the dashboard. One run of one model version against its suites.",
+  "$id": "https://github.com/alejlizardi/providence/schema/results.schema.json",
+  "title": "providence results.json",
+  "description": "The render-ready payload written into every evidence pack and consumed verbatim by `providence export` and the dashboard. One run of one model version against its suites.",
   "type": "object",
   "required": ["model", "provider", "statistics", "suites", "summary", "config_sha256"],
   "properties": {

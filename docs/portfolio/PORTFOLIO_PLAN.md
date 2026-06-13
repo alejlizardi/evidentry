@@ -1,11 +1,11 @@
-# evidentry → portfolio artifact: plan (revised after skeptical review 2026-06-13)
+# providence → portfolio artifact: plan (revised after skeptical review 2026-06-13)
 
 > This is the **direction/rationale** doc. The step-by-step build instructions for a
 > fresh agent live in `EXECUTION_PLAN.md`. Read this for *why*, that for *how*.
 
 **Goal (the only success criterion):** a hiring manager spends ~90 seconds on a live URL or README and concludes *"this person can ship full-stack software AND do hard statistics."* NOT "make the product complete." Every scope call serves legible competence.
 
-**Signals targeted:** full-stack / can-ship-product **and** data-ML / statistical rigor. **Budget:** ~1–2 weeks, one person (strong at stats, less so at frontend). **Hosting:** free (GitHub Pages). **Frontend repo:** separate `evidentry-dashboard`. **Stack:** React + Vite + TS + Tailwind + Recharts.
+**Signals targeted:** full-stack / can-ship-product **and** data-ML / statistical rigor. **Budget:** ~1–2 weeks, one person (strong at stats, less so at frontend). **Hosting:** free (GitHub Pages). **Frontend repo:** separate `providence-dashboard`. **Stack:** React + Vite + TS + Tailwind + Recharts.
 
 **Backend decision (2026-06-13):** static-export SPA **now**; a real FastAPI service is a **documented stretch goal (Phase 4)**, not in the core budget. The static path hits the budget + the stats signal; the API, only if reached, earns the harder full-stack signal honestly.
 
@@ -15,7 +15,7 @@
 
 Two independent critics reviewed the original plan. Net: the raw material is above portfolio-average; the risk is **presentation and over-scope**, not substance. Findings accepted:
 
-1. **CRITICAL — point only at the canonical repo `C:\Users\epica\evidentry` (v0.3.0).** The frozen snapshot `Periapsis/tools/evidentry/` is **v0.2.0 and has NO judges**. One critic mis-read the snapshot and wrongly concluded the judge feature was fictional. It is real in canonical (`evidentry/judges.py`, the `examples/judged_faithfulness/` pack). A fresh agent must not repeat this.
+1. **CRITICAL — point only at the canonical repo `C:\Users\epica\providence` (v0.3.0).** The frozen snapshot `Periapsis/tools/providence/` is **v0.2.0 and has NO judges**. One critic mis-read the snapshot and wrongly concluded the judge feature was fictional. It is real in canonical (`providence/judges.py`, the `examples/judged_faithfulness/` pack). A fresh agent must not repeat this.
 2. **Drift has no history inside a single pack.** `results.json` is one run. The version-timeline needs `export` to call the existing `compare_packs(baseline, current)` across consecutive pack pairs and bake the rows in. `compare_packs` already does the Fisher+Holm math — export is a loop, not new statistics.
 3. **Authoring believable history packs is real work** (~1 day): hand-tune mock pass-counts across versions so one version trips a Holm-significant Fisher drift event on tiny n. Was invisible in the original plan.
 4. **5 custom-dataviz views in ~7 days is too much for a React-light builder.** Ship **fewer, finished** views. A half-done broad dashboard is worse than a small complete one for this goal.

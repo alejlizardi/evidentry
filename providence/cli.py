@@ -1,4 +1,4 @@
-"""evidentry command-line interface."""
+"""providence command-line interface."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ from .ingest import INGESTERS, IngestError, write_ingested
 from .runner import run_all
 
 INIT_CONFIG = """\
-# evidentry configuration — see https://github.com/<org>/evidentry
+# providence configuration — see https://github.com/<org>/providence
 model:
   name: my-model
   version: "1.0.0"
@@ -74,7 +74,7 @@ INIT_DATASET = """\
 def cmd_init(args: argparse.Namespace) -> int:
     target = Path(args.dir)
     target.mkdir(parents=True, exist_ok=True)
-    config_path = target / "evidentry.yaml"
+    config_path = target / "providence.yaml"
     dataset_path = target / "dataset.jsonl"
     if config_path.exists() and not args.force:
         print(f"Refusing to overwrite {config_path} (use --force)", file=sys.stderr)
@@ -83,7 +83,7 @@ def cmd_init(args: argparse.Namespace) -> int:
     if not dataset_path.exists() or args.force:
         dataset_path.write_text(INIT_DATASET, encoding="utf-8")
     print(f"Initialized {config_path} and {dataset_path}")
-    print("Next: edit them, then run `evidentry run -c evidentry.yaml`")
+    print("Next: edit them, then run `providence run -c providence.yaml`")
     return 0
 
 
@@ -215,7 +215,7 @@ def cmd_ingest(args: argparse.Namespace) -> int:
         )
     for note in info["notes"]:
         print(f"  note: {note}")
-    print("Next: point a suite at these files in evidentry.yaml:")
+    print("Next: point a suite at these files in providence.yaml:")
     print("  provider:")
     print("    type: external")
     print(f"    results_file: {outputs_path.name}")
@@ -229,13 +229,13 @@ def cmd_ingest(args: argparse.Namespace) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        prog="evidentry",
+        prog="providence",
         description="Turn LLM eval runs into auditable evidence packs with defensible statistics.",
     )
-    parser.add_argument("--version", action="version", version=f"evidentry {__version__}")
+    parser.add_argument("--version", action="version", version=f"providence {__version__}")
     sub = parser.add_subparsers(dest="command", required=True)
 
-    p_init = sub.add_parser("init", help="Scaffold an evidentry.yaml and sample dataset")
+    p_init = sub.add_parser("init", help="Scaffold an providence.yaml and sample dataset")
     p_init.add_argument("dir", nargs="?", default=".", help="Target directory")
     p_init.add_argument("--force", action="store_true", help="Overwrite existing files")
     p_init.set_defaults(func=cmd_init)
@@ -250,7 +250,7 @@ def main(argv: list[str] | None = None) -> int:
             "1 = configuration or usage error."
         ),
     )
-    p_run.add_argument("-c", "--config", default="evidentry.yaml")
+    p_run.add_argument("-c", "--config", default="providence.yaml")
     p_run.add_argument(
         "--baseline", help="Path to a prior evidence pack for drift comparison", default=None
     )
@@ -294,7 +294,7 @@ def main(argv: list[str] | None = None) -> int:
         "ingest",
         help="Convert another eval tool's output file into external-ingestion JSONL",
         description=(
-            "Extracts each item's id, input, and raw model output; evidentry "
+            "Extracts each item's id, input, and raw model output; providence "
             "re-scores the outputs with its own metrics (the source tool's "
             "scores and assertions are not imported)."
         ),

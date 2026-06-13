@@ -1,6 +1,6 @@
 import unittest
 
-from evidentry.metrics import score
+from providence.metrics import score
 
 
 class TestMetrics(unittest.TestCase):

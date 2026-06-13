@@ -4,9 +4,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from evidentry.config import load_config
-from evidentry.evidence import build_pack, export_series
-from evidentry.runner import run_all
+from providence.config import load_config
+from providence.evidence import build_pack, export_series
+from providence.runner import run_all
 
 EXAMPLE = Path(__file__).parent.parent / "examples" / "credit_memo_summarizer"
 MODEL_HISTORY = Path(__file__).parent.parent / "examples" / "model_history"
@@ -41,7 +41,7 @@ class TestExportSeries(unittest.TestCase):
         for f in EXAMPLE.iterdir():
             if f.is_file():
                 shutil.copy(f, src / f.name)
-        self.config = load_config(src / "evidentry.yaml")
+        self.config = load_config(src / "providence.yaml")
         self.results = run_all(self.config)
 
     def test_export_two_packs(self):
@@ -114,7 +114,7 @@ class TestModelHistorySeries(unittest.TestCase):
             # Drop any pre-generated evidence so we build fresh from configs.
             if (src / "evidence").exists():
                 shutil.rmtree(src / "evidence")
-            config = load_config(src / "evidentry.yaml")
+            config = load_config(src / "providence.yaml")
             results = run_all(config)
             self.pack_dirs.append(build_pack(config, results))
 

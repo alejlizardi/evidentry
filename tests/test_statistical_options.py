@@ -3,11 +3,11 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from evidentry.config import ConfigError, load_config
-from evidentry.evidence import compare_packs
-from evidentry.report import render_markdown
-from evidentry.runner import run_all
-from evidentry.stats import (
+from providence.config import ConfigError, load_config
+from providence.evidence import compare_packs
+from providence.report import render_markdown
+from providence.runner import run_all
+from providence.stats import (
     _binom_cdf,
     _binom_sf,
     clopper_pearson_interval,
@@ -160,8 +160,8 @@ class TestConfigAndEndToEnd(unittest.TestCase):
         (self.tmp / "data.jsonl").write_text(DATA, encoding="utf-8")
 
     def load(self, cfg_text):
-        (self.tmp / "evidentry.yaml").write_text(cfg_text, encoding="utf-8")
-        return load_config(self.tmp / "evidentry.yaml")
+        (self.tmp / "providence.yaml").write_text(cfg_text, encoding="utf-8")
+        return load_config(self.tmp / "providence.yaml")
 
     def with_stats(self, block):
         return BASE_CONFIG + "statistics:\n" + block

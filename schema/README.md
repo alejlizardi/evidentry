@@ -1,8 +1,8 @@
-# evidentry results.json — the data contract
+# providence results.json — the data contract
 
 [`results.schema.json`](results.schema.json) (JSON Schema, draft 2020-12) describes
 the `results.json` written into every evidence pack. It is the single payload the
-dashboard renders: `evidentry export` copies it verbatim into `site-data/packs/<id>.json`,
+dashboard renders: `providence export` copies it verbatim into `site-data/packs/<id>.json`,
 and the frontend's TypeScript types mirror this schema.
 
 It exists so the frontend isn't chasing a moving target — change the run output and
@@ -39,7 +39,7 @@ results.json
   need nothing more).
 
 Drift between versions is **not** in this file — a single `results.json` is one run.
-The version timeline is produced by `evidentry export`, which calls `compare_packs`
+The version timeline is produced by `providence export`, which calls `compare_packs`
 across consecutive packs and writes `drift.json` alongside `index.json`.
 
 ## Validating
