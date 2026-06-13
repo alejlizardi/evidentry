@@ -116,6 +116,104 @@ def compare_packs(
     }
 
 
+def _read_pack(pack_dir: Path) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Load a pack's results.json and manifest.json."""
+    pack_dir = Path(pack_dir)
+    results_path = pack_dir / "results.json"
+    manifest_path = pack_dir / "manifest.json"
+    if not results_path.exists():
+        raise FileNotFoundError(f"No results.json in pack: {pack_dir}")
+    if not manifest_path.exists():
+        raise FileNotFoundError(f"No manifest.json in pack: {pack_dir}")
+    results = json.loads(results_path.read_text(encoding="utf-8"))
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    return results, manifest
+
+
+def _headline_verdict(results: dict[str, Any]) -> str:
+    """Worst suite verdict, in the order FAIL > FAIL (point) > PASS (point) > PASS.
+
+    A pack's headline is its weakest link: any settled FAIL dominates, then an
+    unsettled FAIL, then an unsettled PASS, and only an all-settled-PASS pack
+    reads as a clean PASS.
+    """
+    rank = {"FAIL": 0, "FAIL (point)": 1, "PASS (point)": 2, "PASS": 3}
+    verdicts = [s["verdict"] for s in results["suites"]]
+    if not verdicts:
+        return "PASS"
+    return min(verdicts, key=lambda v: rank.get(v, 3))
+
+
+def _index_entry(pack_id: str, results: dict[str, Any], manifest: dict[str, Any]) -> dict[str, Any]:
+    model = results["model"]
+    summary = results["summary"]
+    return {
+        "id": pack_id,
+        "model_name": model["name"],
+        "version": model["version"],
+        "generated_at": manifest.get("created_utc"),
+        "suites_passed": summary["suites_passed"],
+        "total_suites": summary["total_suites"],
+        "headline_verdict": _headline_verdict(results),
+    }
+
+
+def export_series(pack_dirs: list[Path], out_dir: Path) -> dict[str, Any]:
+    """Export a version-ordered series of packs into frontend-ready static JSON.
+
+    Writes, under `out_dir`:
+      - packs/<pack_id>.json   each pack's results.json verbatim (it is already
+                               the render payload).
+      - index.json             one ordered entry per pack (id, model, version,
+                               generated_at, suites_passed/total, headline).
+      - drift.json             for each consecutive pair, the rows from
+                               `compare_packs` (Fisher + Holm) — the timeline.
+
+    Statistics are not re-implemented here: drift reuses `compare_packs`, which
+    already does the Fisher-exact + Holm-adjusted math.
+    """
+    out_dir = Path(out_dir)
+    packs_dir = out_dir / "packs"
+    packs_dir.mkdir(parents=True, exist_ok=True)
+
+    loaded: list[tuple[str, dict[str, Any], dict[str, Any], Path]] = []
+    for pack_dir in pack_dirs:
+        pack_dir = Path(pack_dir)
+        results, manifest = _read_pack(pack_dir)
+        pack_id = str(manifest["pack_id"])[:12]
+        loaded.append((pack_id, results, manifest, pack_dir))
+
+    index = []
+    for pack_id, results, manifest, _ in loaded:
+        (packs_dir / f"{pack_id}.json").write_text(
+            json.dumps(results, indent=2, sort_keys=True), encoding="utf-8", newline="\n"
+        )
+        index.append(_index_entry(pack_id, results, manifest))
+
+    drift = []
+    for (from_id, _, from_manifest, from_dir), (to_id, to_results, to_manifest, _) in zip(
+        loaded, loaded[1:]
+    ):
+        comparison = compare_packs(from_dir, to_results)
+        drift.append(
+            {
+                "from_id": from_id,
+                "to_id": to_id,
+                "from_version": from_manifest["model"]["version"],
+                "to_version": to_manifest["model"]["version"],
+                "rows": comparison["suites"] if comparison else [],
+            }
+        )
+
+    (out_dir / "index.json").write_text(
+        json.dumps(index, indent=2, sort_keys=True), encoding="utf-8", newline="\n"
+    )
+    (out_dir / "drift.json").write_text(
+        json.dumps(drift, indent=2, sort_keys=True), encoding="utf-8", newline="\n"
+    )
+    return {"index": index, "drift": drift}
+
+
 def build_pack(
     config: Config, results: dict[str, Any], baseline: Path | None = None
 ) -> Path:
