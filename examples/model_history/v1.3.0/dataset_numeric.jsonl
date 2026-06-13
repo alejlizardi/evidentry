@@ -1,8 +1,8 @@
-{"id": "num-01", "input": "Extract the DSCR as a number: 'Debt service coverage stands at 1.42x on a trailing twelve month basis.'", "expected": 1.42}
+{"id": "num-01", "input": "Extract the DSCR as a number: 'Debt service coverage stands at 1.42x TTM.'", "expected": 1.42}
 {"id": "num-02", "input": "Extract the facility size in dollars: 'The borrower requests a facility of $12,500,000.'", "expected": 12500000}
-{"id": "num-03", "input": "Extract the LTV percentage as a number: 'Loan-to-value is approximately 78% based on the March appraisal.'", "expected": 78}
-{"id": "num-04", "input": "Extract the occupancy percentage: 'The property is 91% occupied as of the rent roll dated May 31.'", "expected": 91}
-{"id": "num-05", "input": "Extract the fixed charge coverage covenant: 'Minimum fixed charge coverage of 1.20x is required at each test date.'", "expected": 1.20}
-{"id": "num-06", "input": "Extract the debt yield percentage: 'The stabilized debt yield is 9.8% on in-place net operating income.'", "expected": 9.8}
-{"id": "num-07", "input": "Extract the guarantor net worth in dollars: 'The guarantor reports a net worth of $4,100,000.'", "expected": 4100000}
-{"id": "num-08", "input": "Extract the advance rate percentage: 'The borrowing base advances 85% of eligible receivables.'", "expected": 85}
+{"id": "num-03", "input": "Extract the LTV as a number: 'Collateral supports a 78% loan-to-value.'", "expected": 78}
+{"id": "num-04", "input": "Extract the covenant FCCR: 'Minimum fixed charge coverage of 1.2x applies.'", "expected": 1.2}
+{"id": "num-05", "input": "Extract the concentration: 'Top customer is 38% of revenue.'", "expected": 38}
+{"id": "num-06", "input": "Extract the rate in percent: 'Priced at SOFR plus 2.75%.'", "expected": 2.75}
+{"id": "num-07", "input": "Extract the tenor in months: 'The facility matures in 60 months.'", "expected": 60}
+{"id": "num-08", "input": "Extract the EBITDA in dollars: 'Trailing EBITDA of $4,200,000.'", "expected": 4200000}

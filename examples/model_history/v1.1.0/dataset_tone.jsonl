@@ -1,0 +1,12 @@
+{"id": "tone-01", "input": "Brief Northfield Plastics LLC in neutral institutional tone. The brief MUST state the facility and use the word 'risk' (no promotional language).", "expected": ["facility", "risk"]}
+{"id": "tone-02", "input": "Brief Harbor Logistics Inc. in neutral institutional tone. The brief MUST state the facility and use the word 'risk' (no promotional language).", "expected": ["facility", "risk"]}
+{"id": "tone-03", "input": "Brief Cedar Ridge Senior Living in neutral institutional tone. The brief MUST state the facility and use the word 'risk' (no promotional language).", "expected": ["facility", "risk"]}
+{"id": "tone-04", "input": "Brief Atlas Metalworks Corp. in neutral institutional tone. The brief MUST state the facility and use the word 'risk' (no promotional language).", "expected": ["facility", "risk"]}
+{"id": "tone-05", "input": "Brief Brightwater Seafood Co. in neutral institutional tone. The brief MUST state the facility and use the word 'risk' (no promotional language).", "expected": ["facility", "risk"]}
+{"id": "tone-06", "input": "Brief Sterling Office REIT in neutral institutional tone. The brief MUST state the facility and use the word 'risk' (no promotional language).", "expected": ["facility", "risk"]}
+{"id": "tone-07", "input": "Brief Meridian AgriGrowers in neutral institutional tone. The brief MUST state the facility and use the word 'risk' (no promotional language).", "expected": ["facility", "risk"]}
+{"id": "tone-08", "input": "Brief Pinnacle Data Centers in neutral institutional tone. The brief MUST state the facility and use the word 'risk' (no promotional language).", "expected": ["facility", "risk"]}
+{"id": "tone-09", "input": "Brief Coastal Brewing Group in neutral institutional tone. The brief MUST state the facility and use the word 'risk' (no promotional language).", "expected": ["facility", "risk"]}
+{"id": "tone-10", "input": "Brief Granite Peak Mining in neutral institutional tone. The brief MUST state the facility and use the word 'risk' (no promotional language).", "expected": ["facility", "risk"]}
+{"id": "tone-11", "input": "Brief Lakeshore Hospitality in neutral institutional tone. The brief MUST state the facility and use the word 'risk' (no promotional language).", "expected": ["facility", "risk"]}
+{"id": "tone-12", "input": "Brief Vanguard Auto Parts in neutral institutional tone. The brief MUST state the facility and use the word 'risk' (no promotional language).", "expected": ["facility", "risk"]}

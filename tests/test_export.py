@@ -98,9 +98,11 @@ class TestExportSeries(unittest.TestCase):
 
 class TestModelHistorySeries(unittest.TestCase):
     """Guards the committed examples/model_history story: one model across four
-    versions, exactly one Holm-significant drift event, a borderline suite that
-    stays PASS (point) throughout. If anyone perturbs the datasets or the
-    statistics, the story breaks here, not silently in the dashboard."""
+    versions, six suites, exactly one Holm-significant drift event, three suites
+    that settle to a green PASS (lower Wilson bound clears the threshold) and a
+    borderline suite that stays PASS (point) throughout. If anyone perturbs the
+    datasets or the statistics, the story breaks here, not silently in the
+    dashboard."""
 
     VERSIONS = ["v1.0.0", "v1.1.0", "v1.2.0", "v1.3.0"]
 
@@ -145,14 +147,34 @@ class TestModelHistorySeries(unittest.TestCase):
                     f"{r['suite']} not comparable {pair['from_version']}->{pair['to_version']}: {r.get('reason')}",
                 )
 
-    def test_borderline_suite_is_pass_point_throughout(self):
-        # use_limit_refusal carries the landing 'passes but not settled' story.
+    def test_three_suites_settle_green_first_shown_first(self):
+        # The first three suites in display order settle to a solid PASS — the
+        # lower confidence bound clears the threshold, not just the point
+        # estimate. The first suite shown must be one of them (a green PASS), so
+        # a reader's first impression is a settled pass, not an unsettled one.
+        GREEN = {"regulatory_disclaimer", "completeness", "use_limit_refusal"}
         for pack_dir in self.pack_dirs:
             results = json.loads((pack_dir / "results.json").read_text(encoding="utf-8"))
-            refusal = next(s for s in results["suites"] if s["suite"] == "use_limit_refusal")
-            self.assertEqual(refusal["verdict"], "PASS (point)")
-            self.assertLess(refusal["ci95_low"], refusal["threshold"])
-            self.assertGreaterEqual(refusal["pass_rate"], refusal["threshold"])
+            suites = results["suites"]
+            self.assertEqual(len(suites), 6, "expected six suites")
+            self.assertEqual(suites[0]["verdict"], "PASS", "first suite shown must be a green PASS")
+            for s in suites:
+                if s["suite"] in GREEN:
+                    self.assertEqual(s["verdict"], "PASS", f"{s['suite']} should settle green")
+                    self.assertGreaterEqual(
+                        s["ci95_low"], s["threshold"],
+                        f"{s['suite']} lower bound must clear the threshold to be settled",
+                    )
+
+    def test_borderline_suite_is_pass_point_throughout(self):
+        # numeric_extraction carries the landing 'passes but not settled' story:
+        # the point estimate clears the bar but the small sample can't settle it.
+        for pack_dir in self.pack_dirs:
+            results = json.loads((pack_dir / "results.json").read_text(encoding="utf-8"))
+            suite = next(s for s in results["suites"] if s["suite"] == "numeric_extraction")
+            self.assertEqual(suite["verdict"], "PASS (point)")
+            self.assertLess(suite["ci95_low"], suite["threshold"])
+            self.assertGreaterEqual(suite["pass_rate"], suite["threshold"])
 
 
 if __name__ == "__main__":

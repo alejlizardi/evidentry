@@ -1,10 +1,24 @@
-{"id": "cmp-01", "input": "Brief the Northfield facility. The brief MUST state: borrower, facility type, and the primary risk.", "expected": ["borrower", "facility", "risk"]}
-{"id": "cmp-02", "input": "Brief the Harbor Logistics term loan. The brief MUST state: collateral, covenant, and amortization basis.", "expected": ["collateral", "covenant", "amortization"]}
-{"id": "cmp-03", "input": "Brief the Mesa Verde construction loan. The brief MUST state: sponsor support, completion guaranty, and market risk.", "expected": ["sponsor", "completion guaranty", "market"]}
-{"id": "cmp-04", "input": "Brief the Lakeshore acquisition. The brief MUST state: occupancy, regulatory status, and facility size.", "expected": ["occupancy", "regulatory", "facility size"]}
-{"id": "cmp-05", "input": "Brief the Sunbelt Cold Storage loan. The brief MUST state: pre-leasing, sponsor co-invest, and construction risk.", "expected": ["pre-leasing", "co-invest", "construction"]}
-{"id": "cmp-06", "input": "Brief the Granite State revolver. The brief MUST state: borrowing base, customer concentration, and advance rate.", "expected": ["borrowing base", "concentration", "advance rate"]}
-{"id": "cmp-07", "input": "Brief the Coastal Marine refinance. The brief MUST state: collateral vessels, loan-to-value, and charter expiry.", "expected": ["collateral", "loan-to-value", "charter"]}
-{"id": "cmp-08", "input": "Brief the Heartland Grain line. The brief MUST state: members' equity support, basis risk, and facility purpose.", "expected": ["equity", "basis risk", "purpose"]}
-{"id": "cmp-09", "input": "Brief the Vantage mezzanine tranche. The brief MUST state: subordination, tenant concentration, and lease term.", "expected": ["subordination", "tenant", "lease"]}
-{"id": "cmp-10", "input": "Brief the Two Rivers expansion loan. The brief MUST state: DSCR, policy exception, and mitigant.", "expected": ["DSCR", "policy", "mitigant"]}
+{"id": "cmp-01", "input": "Brief the Northfield Plastics LLC facility. The brief MUST state: borrower, facility, risk.", "expected": ["borrower", "facility", "risk"]}
+{"id": "cmp-02", "input": "Brief the Harbor Logistics Inc. facility. The brief MUST state: collateral, covenant, amortization.", "expected": ["collateral", "covenant", "amortization"]}
+{"id": "cmp-03", "input": "Brief the Cedar Ridge Senior Living facility. The brief MUST state: borrower, covenant, maturity.", "expected": ["borrower", "covenant", "maturity"]}
+{"id": "cmp-04", "input": "Brief the Atlas Metalworks Corp. facility. The brief MUST state: collateral, risk, pricing.", "expected": ["collateral", "risk", "pricing"]}
+{"id": "cmp-05", "input": "Brief the Brightwater Seafood Co. facility. The brief MUST state: borrower, facility, risk.", "expected": ["borrower", "facility", "risk"]}
+{"id": "cmp-06", "input": "Brief the Sterling Office REIT facility. The brief MUST state: collateral, covenant, amortization.", "expected": ["collateral", "covenant", "amortization"]}
+{"id": "cmp-07", "input": "Brief the Meridian AgriGrowers facility. The brief MUST state: borrower, covenant, maturity.", "expected": ["borrower", "covenant", "maturity"]}
+{"id": "cmp-08", "input": "Brief the Pinnacle Data Centers facility. The brief MUST state: collateral, risk, pricing.", "expected": ["collateral", "risk", "pricing"]}
+{"id": "cmp-09", "input": "Brief the Coastal Brewing Group facility. The brief MUST state: borrower, facility, risk.", "expected": ["borrower", "facility", "risk"]}
+{"id": "cmp-10", "input": "Brief the Granite Peak Mining facility. The brief MUST state: collateral, covenant, amortization.", "expected": ["collateral", "covenant", "amortization"]}
+{"id": "cmp-11", "input": "Brief the Lakeshore Hospitality facility. The brief MUST state: borrower, covenant, maturity.", "expected": ["borrower", "covenant", "maturity"]}
+{"id": "cmp-12", "input": "Brief the Vanguard Auto Parts facility. The brief MUST state: collateral, risk, pricing.", "expected": ["collateral", "risk", "pricing"]}
+{"id": "cmp-13", "input": "Brief the Summit Pharma Distribution facility. The brief MUST state: borrower, facility, risk.", "expected": ["borrower", "facility", "risk"]}
+{"id": "cmp-14", "input": "Brief the Riverbend Textiles facility. The brief MUST state: collateral, covenant, amortization.", "expected": ["collateral", "covenant", "amortization"]}
+{"id": "cmp-15", "input": "Brief the Keystone Freight Systems facility. The brief MUST state: borrower, covenant, maturity.", "expected": ["borrower", "covenant", "maturity"]}
+{"id": "cmp-16", "input": "Brief the Aurora Solar Developers facility. The brief MUST state: collateral, risk, pricing.", "expected": ["collateral", "risk", "pricing"]}
+{"id": "cmp-17", "input": "Brief the Birchwood Furniture Mfg. facility. The brief MUST state: borrower, facility, risk.", "expected": ["borrower", "facility", "risk"]}
+{"id": "cmp-18", "input": "Brief the Compass Retail Holdings facility. The brief MUST state: collateral, covenant, amortization.", "expected": ["collateral", "covenant", "amortization"]}
+{"id": "cmp-19", "input": "Brief the Delta Marine Services facility. The brief MUST state: borrower, covenant, maturity.", "expected": ["borrower", "covenant", "maturity"]}
+{"id": "cmp-20", "input": "Brief the Evergreen Packaging Co. facility. The brief MUST state: collateral, risk, pricing.", "expected": ["collateral", "risk", "pricing"]}
+{"id": "cmp-21", "input": "Brief the Northfield Plastics LLC facility. The brief MUST state: borrower, facility, risk.", "expected": ["borrower", "facility", "risk"]}
+{"id": "cmp-22", "input": "Brief the Harbor Logistics Inc. facility. The brief MUST state: collateral, covenant, amortization.", "expected": ["collateral", "covenant", "amortization"]}
+{"id": "cmp-23", "input": "Brief the Cedar Ridge Senior Living facility. The brief MUST state: borrower, covenant, maturity.", "expected": ["borrower", "covenant", "maturity"]}
+{"id": "cmp-24", "input": "Brief the Atlas Metalworks Corp. facility. The brief MUST state: collateral, risk, pricing.", "expected": ["collateral", "risk", "pricing"]}

@@ -1,16 +1,18 @@
 {
   "baseline_pack": null,
-  "config_sha256": "6d04d850567535c7e5d67d5a4514845886039b29c32aeddbb668e29148e1edca",
-  "created_utc": "2026-06-13T19:49:08+00:00",
+  "config_sha256": "7f7a24d38296b8a3db55d0c29d38e760c05d26142e865b9d5f499d66405f8c21",
+  "created_utc": "2026-06-13T22:08:25+00:00",
   "dataset_sha256": {
-    "dataset_accuracy.jsonl": "5dd70a5970e9cdaf1f2f19e9a0ba4a7b18ec5487f74be80365df781e2de4866c",
-    "dataset_completeness.jsonl": "ac76eaa1a788d5c5dde0b8c94b3656cc7994fb018254356e74b941091119ec77",
-    "dataset_numeric.jsonl": "e5e8293b3f8e56d93c7230dff5130a2b28c3c980a12d883582a6b31c70839cc9",
-    "dataset_refusal.jsonl": "ce93873242437675da24f262d9b76f0261d7d3766b0423e69b148dbe50075851"
+    "dataset_accuracy.jsonl": "2d1bc81a2e538b19d451f84e5fd203a8b5a2772ddee9e40feb2e96b158748f25",
+    "dataset_completeness.jsonl": "68e2429830219bd990e4a34beefbd59a126e5d0b7004d3fc063af8da68a4b9db",
+    "dataset_numeric.jsonl": "b9cbc55ccba1abb7bd844b52a469482cdd389cf4e956ea75be07ba22e81d1a3d",
+    "dataset_refusal.jsonl": "fcccc0856549d9bf6a4cd72f51910a13c658b7c1c629934811a69056d782348b",
+    "dataset_regulatory.jsonl": "1826da5e08a87e6f2a208f036cee93576904e02b575c9edb84cccad79fdcaa35",
+    "dataset_tone.jsonl": "cfac231474e0163f07cc3d2d8d2abc0b209904a5540832784fa0cb3a17044edf"
   },
   "files": {
-    "report.md": "055b4ef9ce433171550cc4655db936f961570d7520b5c665678cf1cbc2a173f3",
-    "results.json": "f5b2bbcd91971991b23fb359ce59cd404b0690c7c58d13931d72aa8e0917694e"
+    "report.md": "4bc471b9e699c969600864b7acc79551f9e5acb724382dde49d52793ff708ac0",
+    "results.json": "4ae61732dc3a84f319b1a4982719a0a010430b70e8fefa6c638a973d38a40ecb"
   },
   "model": {
     "description": "",
@@ -25,8 +27,8 @@
     "tier_rationale": "Tier 2: the model informs but does not decide credit outcomes; every output passes human review before reaching credit committee. Exposure is bounded by the commercial loan portfolio it touches (~$1.4B), and erroneous summaries are recoverable at the human review step. It is not Tier 3 because summaries materially shape committee attention.\n",
     "use_case": "Summarizes commercial credit memos (3-15 pages) into a one-page brief for loan officers ahead of credit committee. Output is advisory; a human loan officer reviews every summary before use.\n",
     "vendor": "internal",
-    "version": "1.3.0"
+    "version": "1.1.0"
   },
-  "pack_id": "8e695647e97eb23ae2006478063917ce54f9058e082096f8c206f60c1970be9d",
+  "pack_id": "6cc742a529544005a78819a53143c44010d7596e3bf133efb02945c7657ab06c",
   "providence_version": "0.3.0"
 }
