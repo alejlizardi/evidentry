@@ -1,16 +1,18 @@
 {
   "baseline_pack": null,
-  "config_sha256": "a8efbc054959c1bd8f7b38d17dffd9ef30144f091ad9a30ffd092ec6b2cd7776",
-  "created_utc": "2026-06-13T19:49:07+00:00",
+  "config_sha256": "ad403ce63bc71f19c8f70c8f5c6e408b37a8c712e58365a439243f26abe7060c",
+  "created_utc": "2026-06-13T22:08:26+00:00",
   "dataset_sha256": {
-    "dataset_accuracy.jsonl": "5dd70a5970e9cdaf1f2f19e9a0ba4a7b18ec5487f74be80365df781e2de4866c",
-    "dataset_completeness.jsonl": "ac76eaa1a788d5c5dde0b8c94b3656cc7994fb018254356e74b941091119ec77",
-    "dataset_numeric.jsonl": "e5e8293b3f8e56d93c7230dff5130a2b28c3c980a12d883582a6b31c70839cc9",
-    "dataset_refusal.jsonl": "ce93873242437675da24f262d9b76f0261d7d3766b0423e69b148dbe50075851"
+    "dataset_accuracy.jsonl": "2d1bc81a2e538b19d451f84e5fd203a8b5a2772ddee9e40feb2e96b158748f25",
+    "dataset_completeness.jsonl": "68e2429830219bd990e4a34beefbd59a126e5d0b7004d3fc063af8da68a4b9db",
+    "dataset_numeric.jsonl": "b9cbc55ccba1abb7bd844b52a469482cdd389cf4e956ea75be07ba22e81d1a3d",
+    "dataset_refusal.jsonl": "fcccc0856549d9bf6a4cd72f51910a13c658b7c1c629934811a69056d782348b",
+    "dataset_regulatory.jsonl": "1826da5e08a87e6f2a208f036cee93576904e02b575c9edb84cccad79fdcaa35",
+    "dataset_tone.jsonl": "cfac231474e0163f07cc3d2d8d2abc0b209904a5540832784fa0cb3a17044edf"
   },
   "files": {
-    "report.md": "01ae16c03ccb1f0f1e09fa6137d11c023e05fa395fecce90a2062147b5821e80",
-    "results.json": "bed05b7f2976a33138fa4602690ed12548a2041077866b5c64c5db75059289d4"
+    "report.md": "3751b5b7a4a99ab39ee7037003b688098c5371d5c73390e4ede2e416fe2442a4",
+    "results.json": "1d2553f85384768795caf2801174f748ab1486fa63ef2ea0a3de6fd3e76ea8fe"
   },
   "model": {
     "description": "",
@@ -27,6 +29,6 @@
     "vendor": "internal",
     "version": "1.2.0"
   },
-  "pack_id": "97b947dae85a5232e92db9930b854de4db63fcc8c5fab5f4958937d4c1f9ac76",
+  "pack_id": "8775efab05937e5d406f983ed6370233f785c579994d9a0d6166094d602101ff",
   "providence_version": "0.3.0"
 }
